@@ -10,8 +10,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Connect-MgGraph -Scopes 'User.Read.All', 'Device.Read.All', 'DeviceManagementManagedDevices.Read.All' 
-
 # Using get-mgdevicemanagementdevicecompliancepolicy
 $DCPs = Get-MgDeviceManagementDeviceCompliancePolicy -Property Id, DisplayName, Description
 
