@@ -51,17 +51,17 @@ if (!(Test-Path "$ExportPath")) {
 #Loop through each Compliance policy and export the JSON file
 Write-Host "Exporting Compliance policies..." -ForegroundColor Green
 Write-Host
-foreach ($Policy in $DCPs.Id) {
+foreach ($DCPId in $DCPs.Id) {
     try {
-        $Policy = Get-MgDeviceManagementDeviceCompliancePolicy -PolicyId $Policy
+        $DCP = Get-MgDeviceManagementDeviceCompliancePolicy -PolicyId $DCPId
     }
     catch {
-        Write-Host "An error occurred while retrieving the Compliance Policy with the id '$Id', please provide a valid policy id..." -f Red
+        Write-Host "An error occurred while retrieving the Compliance Policy with the id '$DCPId', please provide a valid policy id..." -f Red
         break
     }
-    $Policy | ConvertTo-Json -Depth 10 | Out-File "$ExportPath\CompliancePolicy_$($Policy.DisplayName)_$($Policy.Id).json"
+    $DCP | ConvertTo-Json -Depth 10 | Out-File "$ExportPath\CompliancePolicy_$($DCP.DisplayName)_$($DCP.Id).json"
     if ($? -eq $true) {
-        Write-Host "JSON file created and can be found at $ExportPath\CompliancePolicy_$($Policy.DisplayName)_$($Policy.Id).json" -ForegroundColor Green
+        Write-Host "JSON file created and can be found at $ExportPath\CompliancePolicy_$($DCP.DisplayName)_$($DCP.Id).json" -ForegroundColor Green
     }
 }
 
