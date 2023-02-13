@@ -18,7 +18,7 @@ For Managed Device app config types, the example uses the Get-MgDeviceAppManagem
 
 For Managed App app config types, the example uses the Invoke-MGraphRequest cmdlet and does not modify returned data other than converting it to JSON format.
 
-### 8. ManagedAppPolicy_Import_FromJSON.ps1
+### 2. ManagedAppPolicy_Import_FromJSON.ps1
 This script imports and creates an App Configuration Policy into the Intune Service that you have authenticated with from a specified JSON file.
 
 When you run the script it will prompt for a path to a .json file, if the path and JSON are valid the import will be attempted.
