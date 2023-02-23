@@ -40,6 +40,6 @@ break
 }
 ```
 ### 4. CompliancePolicy_Remove.ps1
-This script gets all the App Protection policies from the Intune Service that you have authenticated with, then:
+This script gets all the Compliance policies from the Intune Service that you have authenticated with, then:
 1. Prompts the administrator to specify a policy to delete by policy ID.
 2. Removes/deletes the policy from the service
