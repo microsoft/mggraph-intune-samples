@@ -1,6 +1,6 @@
 # Intune Filters samples
 
-This repository of PowerShell sample scripts show how to retrieve, create, and import Intune Filters policies using cmdlets from the Microsoft Graph PowerShell SDK.
+This repository of PowerShell sample scripts show how to retrieve, create, and import Intune Filters using cmdlets from the Microsoft Graph PowerShell SDK.
 
 Documentation for Intune and Microsoft Graph can be found here [Intune Graph Documentation](https://developer.microsoft.com/en-us/graph/docs/api-reference/beta/resources/intune_graph_overview).
 
