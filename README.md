@@ -12,6 +12,9 @@ extensions:
   - Intune
 noDependencies: true
 ---
+
+OLD CONTENT NEEDS UPDATING
+
 # Intune Graph Samples
 
 This repository of PowerShell sample scripts show how to access Intune service resources.  They demonstrate this by making HTTPS RESTful API requests to the Microsoft Graph API from PowerShell.
