@@ -13,8 +13,9 @@ https://learn.microsoft.com/powershell/microsoftgraph/get-started?view=graph-pow
 
 For details on using app-only access for unattended scenarios, see Use app-only authentication with the Microsoft Graph PowerShell SDK:
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
-
 #>
+
+Select-MgProfile "v1.0"
 
 #Filter Intune devices by UPN
 $UPN = Read-Host -Prompt "Enter the UPN of the user whose device will be added to the group"
@@ -55,5 +56,4 @@ New-MgGroupMember -GroupId $SelectedGroupId -DirectoryObjectId $AzureADObjectId
 #If the command was successful, write confirmation output
 if ($?) {
     Write-Output "AAD Device $AzureAdDeviceId succesfully added to group $SelectedGroupId."
-
 }
