@@ -15,10 +15,21 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 Select-MgProfile -Name v1.0
 
+$DownloadPath = Read-Host -Prompt "Enter full path to download and store the .zip, .csv, and .json files"
+if (-not (Test-Path $DownloadPath)) {
+    Write-Output "Path does not exist. Creating directory $DownloadPath"
+    New-Item -Path $DownloadPath -ItemType Directory
+    if (-not (Test-Path $DownloadPath)) {
+        Write-Error "Unable to create directory $DownloadPath. Exiting..."
+        exit
+    }
+    else {
+        Write-Output "Directory succesfully created, requesting report..."
+    }
+}
+
 #URI endpoint for report export jobs
 $URI = "https://graph.microsoft.com/v1.0/deviceManagement/reports/exportJobs"
-
-#"filter": "((DeviceType eq "9") or (DeviceType eq "8") or (DeviceType eq "10") or (DeviceType eq "14"))",
 
 #Creating body for request (report name and columns)
 $Body = @{
@@ -27,8 +38,13 @@ $Body = @{
     filter     = "((DeviceType eq '14') or (DeviceType eq '9') or (DeviceType eq '8') or (DeviceType eq '10'))"
 }
 
-#POST request to create export job
-$Response = (Invoke-MgGraphRequest -Method POST -Uri $URI -Body $Body)
+try {
+    #POST request to create export job
+    $Response = (Invoke-MgGraphRequest -Method POST -Uri $URI -Body $Body)
+}
+catch {
+    Write-Output "$($_.Exception.Message)"
+}
 
 #Storing report request ID to poll until it's been created
 $ReportId = $Response.id
@@ -45,14 +61,14 @@ $URI = "https://graph.microsoft.com/beta/deviceManagement/reports/exportJobs('$R
 
 #Polling report download URI until it's ready for download
 While ($ReportReady -ne 'completed') {
+    Write-Output "Report not ready yet..."
     $Response = (Invoke-MgGraphRequest -Method GET -Uri $URI)
     $ReportReady = $Response.status
     $ReportDownloadURL = $Response.url
     Start-Sleep -Seconds 3
 }
 
-$DownloadPath = Read-Host -Prompt "Enter full path to download and store the .zip, .csv, and .json files"
-
+Write-Output "Report ready. Downloading..."
 #Downloading .zip and extracting report .csv
 $ZipPath = "$DownloadPath\$RequestDate.zip"
 Invoke-WebRequest -Uri $ReportDownloadURL -OutFile $ZipPath 

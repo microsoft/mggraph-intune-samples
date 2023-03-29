@@ -13,18 +13,27 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile -Name "beta"
+Select-MgProfile -Name v1.0
 
-$ExportPath = Read-Host -Prompt "Please specify a path to export the hardware information .csv file e.g. C:\IntuneOutput"
-
-# If the directory path doesn't exist prompt user to create the directory
-if (!(Test-Path "$ExportPath")) {
-
-
-    New-Item -ItemType Directory -Path "$ExportPath" | Out-Null
+$DeviceName = Read-Host -Prompt "Enter the device name to search for"
+$Devices = Get-MgDeviceManagementManagedDevice -Filter "DeviceName eq '$DeviceName'" | Select-Object  DeviceName, Id, userPrincipalName, UserId
+if ($null -eq $Devices) {
+    Write-Output "No devices found with the name $DeviceName" 
+    return
 }
 
-$AllDevices = Get-MgDeviceManagementManagedDevice -All
-$AllDevices | Select-Object id, activationLockBypassCode, iccid, udid , ethernetMacAddress, physicalMemoryInBytes, bootstrapTokenEscrowed, processorArchitecture -ExpandProperty hardwareinformation | Export-Csv -Path "$ExportPath\HardwareDetails.csv" -NoTypeInformation
+#List the users devices
+$Devices | Format-Table -AutoSize
+$DeviceId = Read-Host -Prompt "Enter the Intune Device ID (Id column) of the device id to remove the primary user from"
 
 
+#Build the URI for Graph request
+$URI = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices('$DeviceId')/users/`$ref"
+
+#Remove the primary user
+try {
+    Invoke-MgGraphRequest -Method DELETE -Uri $URI
+}
+catch {
+    Write-Output "$($_.Exception.Message)"
+}

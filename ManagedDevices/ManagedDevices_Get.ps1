@@ -18,9 +18,9 @@ Select-MgProfile -Name "v1.0"
 #Retrieve all managed devices
 Get-MgDeviceManagementManagedDevice -All
 
-<# 
-Retrieve all managed devices by operating system:
 
+# Retrieve all managed devices by operating system:
+<# 
 Get-MgDeviceManagementManagedDevice -Filter "OperatingSystem eq 'Android'"
 Get-MgDeviceManagementManagedDevice -Filter "OperatingSystem eq 'iOS'"
 Get-MgDeviceManagementManagedDevice -Filter "OperatingSystem eq 'macOS'"
@@ -30,7 +30,7 @@ Get-MgDeviceManagementManagedDevice -Filter "OperatingSystem eq 'WindowsMobile'"
 #>
 
 #Retrieve all managed devices by UPN of primary user
-# Get-MgDeviceManagementManagedDevice -Filter "userPrincipalName eq 'cloud1@markhoppercm.onmicrosoft.com'"
+# Get-MgDeviceManagementManagedDevice -Filter "userPrincipalName eq '$UPN'"
 
 #Retrieve associated user of a managed device by device ID
-# Get-MgDeviceManagementManagedDeviceUser
+# Get-MgDeviceManagementManagedDeviceUser -DeviceId $DeviceId
