@@ -26,5 +26,3 @@ if (!(Test-Path "$ExportPath")) {
 
 $AllDevices = Get-MgDeviceManagementManagedDevice -All
 $AllDevices | Select-Object id, activationLockBypassCode, iccid, udid , ethernetMacAddress, physicalMemoryInBytes, bootstrapTokenEscrowed, processorArchitecture -ExpandProperty hardwareinformation | Export-Csv -Path "$ExportPath\HardwareDetails.csv" -NoTypeInformation
-
-

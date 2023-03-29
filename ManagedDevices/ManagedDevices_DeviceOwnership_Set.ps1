@@ -18,21 +18,18 @@ Select-MgProfile -Name "v1.0"
 # Uncomment the line below to return a list of all Intune managed devices
 # Get-MgUserManagedDevice -All
 
-Function Set-IntuneDeviceOwnerShip() {
+Function Set-IntuneDeviceOwnership() {
 
     <#
 	.SYNOPSIS
-	This function is used to return available remote actions from the Graph PowerShell SDK
+	This function is used to set the device ownership property for a specified Intune managed device
 	.DESCRIPTION
-	The function scans the installed Graph PowerShell SDK for available remote actions based on specified Graph version and asks the user for a remote action to return the parameters for
+	The function calls the Update-MgDeviceManagementManagedDevice cmdlet to set the device ownership property for a specified Intune managed device
 	.EXAMPLE
-	Get-IntuneRemoteActions -MgProfile beta
-	Returns all Graph PowerShell SDK remote actions for the specified Graph beta version
+    Set-IntuneDeviceOwnership -ManagedDeviceId $ManagedDeviceId -ManagedDeviceOwnerType $ManagedDeviceOwnerType
 
-    Get-IntuneRemoteActions -MgProfile "v1.0"
-	Returns all Graph PowerShell SDK remote actions for the specified Graph v1.0 version
 	.NOTES
-	NAME: Get-IntuneRemoteActions
+	NAME: Set-IntuneDeviceOwnership
 	#>
 	
     [cmdletbinding()]

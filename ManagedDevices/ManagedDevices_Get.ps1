@@ -18,7 +18,6 @@ Select-MgProfile -Name "v1.0"
 #Retrieve all managed devices
 Get-MgDeviceManagementManagedDevice -All
 
-
 # Retrieve all managed devices by operating system:
 <# 
 Get-MgDeviceManagementManagedDevice -Filter "OperatingSystem eq 'Android'"
