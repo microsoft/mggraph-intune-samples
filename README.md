@@ -15,9 +15,9 @@ noDependencies: true
 
 # MGGraph Intune Sample
 
-This repository of PowerShell sample scripts show how to access Intune service resources.  Although there are many ways to access the Microsoft Graph through scripting languages, like Powershell, this repositories primary focus is the Microsoft Graph Powershell SDK. 
+This repository of sample scripts demonstrate how to access Intune service resources.  Although there are many ways to access the Microsoft Graph through scripting languages, the samples within this repo are examples are are free to utilize.
 
-Documentation for Intune and Microsoft Graph can be found here [Intune Graph Documentation](https://docs.microsoft.com/en-us/graph/api/resources/intune-graph-overview?view=graph-rest-1.0).
+Documentation for Intune and Microsoft Graph is found here [Intune Graph Documentation](https://docs.microsoft.com/en-us/graph/api/resources/intune-graph-overview?view=graph-rest-1.0).
 
 These samples demonstrate typical Intune administrator or Microsoft partner actions for managing Intune resources.
 
@@ -32,7 +32,7 @@ The Intune Graph API enables access to Intune information programmatically for y
 Intune provides data into the Microsoft Graph in the same way as other cloud services do, with rich entity information and relationship navigation.  Use Microsoft Graph to combine information from other services and Intune to build rich cross-service applications for IT professionals or end users. Natively in Powershell you can pipe configurations from one cmdlet, from a specific service into another. This allows solutions to be built that are intuitive and native to the API.   
 
 ## Prerequisites
-Use of these Microsoft Graph API Intune PowerShell samples requires the following:
+Use of these samples requires the following:
 
 * An Intune tenant which supports the Azure Portal with a production or trial license (https://docs.microsoft.com/en-us/intune-azure/introduction/what-is-microsoft-intune)
 * Using the Microsoft Graph APIs to configure Intune controls and policies requires an Intune license.
@@ -51,6 +51,7 @@ After the prerequisites are installed or met, perform the following steps to use
 * Extract the files to a local folder (e.g. C:\IntuneGraphSamples)
 * Run PowerShell x64 from the start menu
 * Browse to the directory (e.g. cd C:\IntuneGraphSamples)
+* Either connect using Connect-MgGraph or update the script to include code to call Connect-MgGraph: https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0
 * For each Folder in the local repository you can browse to that directory and then run the script of your choice
 * Example Application script usage:
   * To use the Manage Applications scripts, from C:\IntuneGraphSamples, run "cd .\Applications\"
@@ -58,7 +59,7 @@ After the prerequisites are installed or met, perform the following steps to use
   This sequence of steps can be used for each folder....
 
 #### 2. Authentication with Microsoft Graph
-Auth will need to be added to scripts for automation
+Auth will need to be added to scripts for automation: https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0
 ```
 Please specify your user principal name for Azure Authentication:
 ```
@@ -94,7 +95,7 @@ This project has adopted the Microsoft Open Source Code of Conduct. For more inf
 
 We'd love to get your feedback about the Intune PowerShell sample. You can send your questions and suggestions to us in the Issues section of this repository.
 
-Your feedback is important to us. Connect with us on Stack Overflow. Tag your questions with [MicrosoftGraph] and [intune].
+Your feedback is important to us. Connect with us on Stack Overflow. Tag your questions with [MicrosoftGraph] and [Intune].
 
 
 ## Additional resources
