@@ -13,9 +13,7 @@ extensions:
 noDependencies: true
 ---
 
-# OLD CONTENT NEEDS UPDATING
-
-# Intune Powershell Samples - using the Microsoft Graph Powershell SDK
+# MGGraph Intune Sample
 
 This repository of PowerShell sample scripts show how to access Intune service resources.  Although there are many ways to access the Microsoft Graph through scripting languages, like Powershell, this repositories primary focus is the Microsoft Graph Powershell SDK. 
 
