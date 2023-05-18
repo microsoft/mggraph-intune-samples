@@ -13,7 +13,7 @@ extensions:
 noDependencies: true
 ---
 
-# MGGraph Intune Sample
+# MGGraph Intune Samples
 
 This repository of sample scripts demonstrate how to access Intune service resources.  Although there are many ways to access the Microsoft Graph through scripting languages, the samples within this repo are examples are are free to utilize.
 
@@ -59,31 +59,24 @@ After the prerequisites are installed or met, perform the following steps to use
   This sequence of steps can be used for each folder....
 
 #### 2. Authentication with Microsoft Graph
-Auth will need to be added to scripts for automation: https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0
-```
-Please specify your user principal name for Azure Authentication:
-```
-Once you have provided a user principal name a popup will open prompting for your password. After a successful authentication with Azure Active Directory the user token will last for an hour, once the hour expires within the PowerShell session you will be asked to re-authenticate.
+To run any of the Intune-based commands in the Microsoft Graph PowerShell SDK, you'll first need to authenticate against your tenant. If you haven't already installed and set up the SDK, see the following links for guidance:
+* [Installation](https://learn.microsoft.com/en-us/powershell/microsoftgraph/installation?view=graph-powershell-1.0)
+* [Get Started](https://learn.microsoft.com/en-us/graph/powershell/get-started)
 
-If you are running the script for the first time against your tenant a popup will be presented stating:
+The Microsoft Graph PowerShell SDK supports two types of authentication: 
+* Delegated access - an app acting on behalf of a signed-in user (interactive logon).
+* App-only access - an app acting with its own identity (unattended scenarios).
 
-```
-Microsoft Intune PowerShell needs permission to:
+For guidance on authenticating using either method, review the following documentation:
+* [Authentication commands](https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0)
+* [Use app-only authentication with the Microsoft Graph PowerShell SDK](https://learn.microsoft.com/en-us/powershell/microsoftgraph/app-only?toc=%2Fgraph%2Ftoc.json&view=graph-powershell-1.0&tabs=azure-portal)
 
-* Sign you in and read your profile
-* Read all groups
-* Read directory data
-* Read and write Microsoft Intune Device Configuration and Policies (preview)
-* Read and write Microsoft Intune RBAC settings (preview)
-* Perform user-impacting remote actions on Microsoft Intune devices (preview)
-* Sign in as you
-* Read and write Microsoft Intune devices (preview)
-* Read and write all groups
-* Read and write Microsoft Intune configuration (preview)
-* Read and write Microsoft Intune apps (preview)
-```
+Each API in the Microsoft Graph is protected by one or more permission scopes. Use the Connect-MgGraph command to sign in with the required scopes. You'll need to sign in with an admin account to consent to the scopes that the Microsoft Graph PowerShell SDK requires if they haven't been granted previously.
 
-Note: If your user account is targeted for device based conditional access your device must be enrolled or compliant to pass authentication.
+**Important**: Connecting with the minmium required permissions for each example scenario is out of scope for the sample scripts provided in this repository. Within each script, you will see an authentication region where you will need to specify your authentication details and permission scope requirements if you are not already authenticated into the service.
+
+For more information and to learn how to use the Find-MgGraphCommand to identify the minimum required permissions each command requires, see here:
+[Determine required permission scopes](https://learn.microsoft.com/en-us/powershell/microsoftgraph/get-started?view=graph-powershell-1.0#authentication)
 
 ## Contributing
 
