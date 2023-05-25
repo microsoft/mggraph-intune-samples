@@ -15,7 +15,7 @@ noDependencies: true
 
 # MGGraph Intune Samples
 
-This repository of sample scripts demonstrate how to access Intune service resources.  Although there are many ways to access the Microsoft Graph through scripting languages, the samples within this repo are examples are are free to utilize.
+This repository of sample scripts demonstrates how to access Intune service resources.  There are many ways to access the Microsoft Graph through scripting languages and the samples in this repo provide examples that you are free to utilize.
 
 Documentation for Intune and Microsoft Graph is found here [Intune Graph Documentation](https://docs.microsoft.com/en-us/graph/api/resources/intune-graph-overview?view=graph-rest-1.0).
 
@@ -27,7 +27,7 @@ The scripts are licensed "as-is." under the MIT License.
 Some script samples retrieve information from your Intune tenant, and others create, delete or update data in your Intune tenant.  Understand the impact of each sample script prior to running it; samples should be run using a non-production or "test" tenant account. 
 
 ## Using the Intune Graph API
-The Intune Graph API enables access to Intune information programmatically for your tenant. The API performs the same Intune operations as those available through the Intune portal. The Intune Portal ustilizes the beta version of the Microsoft Graph (e.g. https://graph.microsoft.com/beta/<namespace). The scripts in this repository will be using the v1.0 version unless it is unavailable. 
+The Intune Graph API enables programmatic access to your Intune tenant information. The API performs the same Intune operations as those available through the Intune portal. The Intune Portal utilizes the beta version of the Microsoft Graph (e.g. https://graph.microsoft.com/beta/<namespace>). The scripts in this repository will be using the v1.0 version unless it is unavailable. 
 
 Intune provides data into the Microsoft Graph in the same way as other cloud services do, with rich entity information and relationship navigation.  Use Microsoft Graph to combine information from other services and Intune to build rich cross-service applications for IT professionals or end users. Natively in Powershell you can pipe configurations from one cmdlet, from a specific service into another. This allows solutions to be built that are intuitive and native to the API.   
 
@@ -39,7 +39,7 @@ Use of these samples requires the following:
 * An account with permissions to administer the Intune Service
 * PowerShell v5.0 or later on Windows 10 x64 (PowerShell v4.0 is a minimum requirement for the scripts to function correctly)
 * Note: For PowerShell 4.0 you will require the [PowershellGet Module for PS 4.0](https://www.microsoft.com/en-us/download/details.aspx?id=51451) to enable the usage of the Install-Module functionality
-* First time usage of these scripts requires a Global Administrator of the Tenant to accept the permissions of the application
+* First time usage of these scripts requires a Global Administrator of the Tenant to accept the permissions of the application (grant consent).
 * The Microsoft Graph Powershell SDK module installed (https://github.com/microsoftgraph/msgraph-sdk-powershell)
 
 ## Getting Started
@@ -86,7 +86,7 @@ This project has adopted the Microsoft Open Source Code of Conduct. For more inf
 
 ## Questions and comments
 
-We'd love to get your feedback about the Intune PowerShell sample. You can send your questions and suggestions to us in the Issues section of this repository.
+We'd love to get your feedback about these Intune PowerShell samples. You can send your questions and suggestions to us in the Issues section of this repository.
 
 Your feedback is important to us. Connect with us on Stack Overflow. Tag your questions with [MicrosoftGraph] and [Intune].
 
