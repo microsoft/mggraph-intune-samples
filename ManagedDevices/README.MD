@@ -158,3 +158,25 @@ Enter the Intune Device ID (Id column) of the device id to remove the primary us
 
 ### 10. ManagedDevices_Add_ToAADGroup.ps1
 This script can be used to add an Intune managed device to a specified AAD group. The script prompts for an associated user's UPN, prompts the device to add, and prompts for a group name to add them to.
+
+
+### 11. ManagedDevices_NoBitLockerKey_Get.ps1
+This script returns all Windows device records in Entra ID that do not have a BitLocker recovery key backed up. It also returns a list of managed Intune device records whose corresponding Entra ID device ID does not have a backed up BitLocker recovery key. Note that there is typically overlap between these two datasets. These device lists can also be exported to .csv. using the examples in the last script comment.
+##### Example output
+```
+150 Windows device records found in Entra ID
+2 Windows device records found in Entra ID without BitLocker recovery keys:
+
+DisplayName     DeviceId
+-----------     --------
+CATTESTCL03     c03f701b-0000-4360-921f-49fs08f8asy7
+DESKTOP-SFPR123 7ab07aac-0000-49c8-ac13-0cf8bbe16f69
+
+148 Windows device records found in Intune
+2 of these do not have BitLocker recovery keys in Entra ID:
+
+Id                                   AzureAdDeviceId                      DeviceName      UserPrincipalName                    IsEncrypted
+--                                   ---------------                      ----------      -----------------                    -----------
+ce7d7ac4-d7e2-1234-a3e4-0cf8bbe16f69 c03f701b-0000-4360-921f-49fs08f8asy7 CATTESTCL03     testuser1@contoso.com                      False
+cjde98a8-8b13-1234-b54b-ee0000019263 7ab07aac-0000-49c8-ac13-0cf8bbe16f69 DESKTOP-SFPR123 testuser2@contoso.com                      False
+```
