@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.DeviceManagement
+Import-Module Microsoft.Graph.Beta.DeviceManagement
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:

@@ -1,5 +1,5 @@
-Import-Module Microsoft.Graph.DeviceManagement.Enrolment
-Import-Module Microsoft.Graph.DeviceManagement.Actions
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Enrollment
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Actions
 
 
 <# region Authentication
@@ -12,10 +12,7 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# Get-MgDeviceManagementDepOnboardingSetting not yet available in v1.0, using beta endpoint
-Select-MgProfile -Name beta
-
-$ADETokens = Get-MgDeviceManagementDepOnboardingSetting
+$ADETokens = Get-MgBetaDeviceManagementDepOnboardingSetting
 
 if ($ADETokens.Count -eq 0) {
     Write-Host "No ADE tokens found."
@@ -30,6 +27,4 @@ elseif ($ADETokens.Count -gt 1) {
     $ADETokenId = Read-Host "More than one ADE token found. Please enter the token ID to sync and press enter"
 }
 
-Sync-MgDeviceManagementDepOnboardingSettingWithAppleDeviceEnrollmentProgram -DepOnboardingSettingId $ADETokenId
-
-
+Sync-MgBetaDeviceManagementDepOnboardingSettingWithAppleDeviceEnrollmentProgram -DepOnboardingSettingId $ADETokenId

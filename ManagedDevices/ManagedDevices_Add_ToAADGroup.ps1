@@ -15,8 +15,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile "v1.0"
-
 #Filter Intune devices by UPN
 $UPN = Read-Host -Prompt "Enter the UPN of the user whose device will be added to the group"
 $Devices = Get-MgDeviceManagementManagedDevice -Filter "UserPrincipalName eq '$UPN'"  | Select-Object  ManagedDeviceName, Id, DeviceName, Manufacturer, AzureAdDeviceId, UserPrincipalName, UserId

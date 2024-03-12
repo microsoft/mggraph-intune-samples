@@ -1,7 +1,6 @@
 Import-Module Microsoft.Graph.DeviceManagement
 
 ####################################################
-
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
 https://learn.microsoft.com/en-us/powershell/microsoftgraph/installation?view=graph-powershell-1.0
@@ -15,9 +14,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal
 
 #>
-
-Select-MgProfile -Name v1.0
-Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
 #endregion
 ####################################################
 

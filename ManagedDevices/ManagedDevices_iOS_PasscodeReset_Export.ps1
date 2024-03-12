@@ -13,8 +13,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile -Name v1.0
-
 $DownloadPath = Read-Host -Prompt "Enter full path to download and store the .zip, .csv, and .json files"
 if (-not (Test-Path $DownloadPath)) {
     Write-Output "Path does not exist. Creating directory $DownloadPath"

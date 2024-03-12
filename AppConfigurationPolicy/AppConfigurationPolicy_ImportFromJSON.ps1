@@ -14,8 +14,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-
 $AppConfigSelection = Read-Host -Prompt "What type of app configuration policy will be imported?
 (Enter '1' for Managed Device or '2' for Managed App)"  
 

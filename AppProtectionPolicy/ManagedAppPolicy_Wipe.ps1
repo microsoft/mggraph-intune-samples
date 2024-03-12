@@ -22,9 +22,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-# Setting graph endpoint to v1.0
-Select-MgProfile -Name v1.0
-
 # Get the user's ID from UPN
 $UserUPN = Read-Host "Enter the UPN of the user"
 

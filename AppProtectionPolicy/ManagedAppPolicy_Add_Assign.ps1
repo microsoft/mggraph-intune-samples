@@ -14,8 +14,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-
 # Set the AAD Group where the policy will be assigned
 $AADGroup = Read-Host -Prompt "Enter the Azure AD Group name where policies will be assigned"
 $SelectedGroup = (Get-MgGroup -Filter "DisplayName eq '$AADGroup'")

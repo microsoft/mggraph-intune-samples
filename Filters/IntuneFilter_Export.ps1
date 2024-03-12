@@ -4,7 +4,7 @@ Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT
 See LICENSE in the project root for license information.
 #>
 
-Import-Module Microsoft.Graph.Devices.CorporateManagement
+Import-Module Microsoft.Graph.Beta.Devices.CorporateManagement
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:

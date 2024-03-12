@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.DeviceManagement.Enrolment
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Enrollment
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -10,11 +10,8 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# using beta endpoint for this sample as it is not yet available in v1.0
-Select-MgProfile -Name beta
-
 # Get all Android device profiles
-Get-MgDeviceManagementAndroidDeviceOwnerEnrollmentProfile | Format-Table -AutoSize
+Get-MgBetaDeviceManagementAndroidDeviceOwnerEnrollmentProfile | Format-Table -AutoSize
 
 # Get all Android dedicated device profiles
 #Get-MgDeviceManagementAndroidDeviceOwnerEnrollmentProfile -Filter "EnrollmentMode eq 'corporateOwnedDedicatedDevice'" | Format-Table -AutoSize

@@ -10,9 +10,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-$version = "v1.0"
-Select-MgProfile -Name $version
-
 #Path for temp copies of extracted .ipa files
 $ExtractedPath = Join-Path -Path $env:TEMP -ChildPath ([System.IO.Path]::GetRandomFileName())
 

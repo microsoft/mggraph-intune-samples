@@ -12,7 +12,9 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 #>
 
 # Get and display all AOSP enrollment profiles
-$EnrollmentProfiles = Get-MgBetaDeviceManagementAndroidDeviceOwnerEnrollmentProfile -Filter "enrollmentMode eq 'corporateOwnedAOSPUserAssociatedDevice' or enrollmentMode eq 'corporateOwnedAOSPUserlessDevice'" -Property "Id, displayName, enrollmentMode, tokenValue, tokenCreationDateTime,tokenExpirationDateTime, qrCodeContent" 
+$EnrollmentProfiles = Get-MgBetaDeviceManagementAndroidDeviceOwnerEnrollmentProfile -Property "Id, displayName, enrollmentMode, tokenValue, tokenCreationDateTime,tokenExpirationDateTime, qrCodeContent" 
+# Select only the AOSP enrollment profiles
+$EnrollmentProfiles = $EnrollmentProfiles | Where-Object { $_.enrollmentMode -eq "corporateOwnedAOSPUserAssociatedDevice" -or $_.enrollmentMode -eq "corporateOwnedAOSPUserlessDevice"}
 $EnrollmentProfiles | Select-Object -Property "Id", "displayName", "EnrollmentMode", "tokenCreationDateTime", "tokenExpirationDateTime" | Format-Table -AutoSize
 
 # If there are no AOSP enrollment profiles, exit
