@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.DeviceManagement.Actions
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Actions
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -10,15 +10,12 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# MGP cmdlets used not yet available in v1.0, using beta endpoint
-Select-MgProfile -Name beta
-
-$MGP = Get-MgDeviceManagementAndroidManagedStoreAccountEnterpriseSetting
+$MGP = Get-MgBetaDeviceManagementAndroidManagedStoreAccountEnterpriseSetting
 
 if ($MGP.BindStatus -ne "boundAndValidated") {
     Write-Host "Managed Google Play is not bound to this tenant. Exiting..." -ForegroundColor Red
     return
 }
 else {
-    Sync-MgDeviceManagementAndroidManagedStoreAccountEnterpriseSettingApp
+    Sync-MgBetaDeviceManagementAndroidManagedStoreAccountEnterpriseSettingApp
 }

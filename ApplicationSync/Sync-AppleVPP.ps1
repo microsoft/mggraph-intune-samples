@@ -10,9 +10,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# Select v1.0 endpoint
-Select-MgProfile -Name v1.0
-
 # Get VPP tokens
 $VPPTokens = Get-MgDeviceAppManagementVppToken
 $VPPTokens | Format-Table -AutoSize

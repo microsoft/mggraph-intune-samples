@@ -14,8 +14,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-
 # Define the apps to be included in the policy
 $Apps = @(
 	@{

@@ -16,8 +16,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
 #endregion
 
 ####################################################

@@ -1,4 +1,4 @@
-﻿Import-Module Microsoft.Graph.DeviceManagement
+﻿Import-Module Microsoft.Graph.Beta.DeviceManagement
 
 ####################################################
 
@@ -15,13 +15,12 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal
 
 #>
-Select-MgProfile -Name beta
-Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
+
 #endregion
 ####################################################
 
 
-$PSScripts = Get-mgdeviceManagementScript
+$PSScripts = Get-MgBetaDeviceManagementScript
 
 if ($PSScripts) {
 
@@ -39,7 +38,7 @@ if ($PSScripts) {
 
         write-host "Device Management Scripts - Assignments" -f Cyan
 
-        $Assignments = Get-MgDeviceManagementScriptAssignment -DeviceManagementScriptId $_.Id
+        $Assignments = Get-MgBetaDeviceManagementScriptAssignment -DeviceManagementScriptId $_.Id
 
         if ($Assignments) {
 
@@ -61,7 +60,7 @@ if ($PSScripts) {
 
         }
 
-        $Script = Get-mgdeviceManagementScript -DeviceManagementScriptId $ScriptId
+        $Script = Get-MgBetaDeviceManagementScript -DeviceManagementScriptId $ScriptId
 
         $ScriptContent = $Script.scriptContent
 

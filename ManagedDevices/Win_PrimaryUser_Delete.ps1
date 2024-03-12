@@ -13,8 +13,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile -Name v1.0
-
 $DeviceName = Read-Host -Prompt "Enter the device name to search for"
 $Devices = Get-MgDeviceManagementManagedDevice -Filter "DeviceName eq '$DeviceName'" | Select-Object  DeviceName, Id, userPrincipalName, UserId
 if ($null -eq $Devices) {

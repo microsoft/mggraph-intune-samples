@@ -11,7 +11,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/get-started?view=graph-pow
 For details on using app-only access for unattended scenarios, see Use app-only authentication with the Microsoft Graph PowerShell SDK:
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
-Select-MgProfile -Name v1.0
 
 #Using get-mgdeviceappmanagementandroid/iosmanagedappprotection rather than get-mgdeviceappmanagementmanagedapppolicy to filter out app configuration policies
 $androidPolicies = Get-MgDeviceAppManagementAndroidManagedAppProtection -Property Id

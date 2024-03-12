@@ -13,8 +13,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-
 Write-Host
 $ExportPath = Read-Host -Prompt "Please specify a path to export the policy data to e.g. C:\IntuneOutput"
 

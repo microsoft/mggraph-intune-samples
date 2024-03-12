@@ -1,4 +1,4 @@
-﻿Import-Module Microsoft.Graph.DeviceManagement
+﻿Import-Module Microsoft.Graph.Beta.DeviceManagement
 
 ####################################################
 
@@ -15,9 +15,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal
 
 #>
-
-Select-MgProfile -Name beta
-Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
 #endregion
 ####################################################
 
@@ -27,4 +24,4 @@ $ScriptName = "Test script"
 $ScriptPath = "C:\Scripts\test-script.ps1"
 
 # Upload new Intune script
-New-MgDeviceManagementScript -DisplayName $ScriptName -ScriptContentInputFile $ScriptPath -Description $ScriptDescription
+New-MgBetaDeviceManagementScript -DisplayName $ScriptName -ScriptContentInputFile $ScriptPath -Description $ScriptDescription

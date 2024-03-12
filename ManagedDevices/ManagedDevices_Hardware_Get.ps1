@@ -13,8 +13,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile -Name "beta"
-
 $ExportPath = Read-Host -Prompt "Please specify a path to export the hardware information .csv file e.g. C:\IntuneOutput"
 
 # If the directory path doesn't exist prompt user to create the directory

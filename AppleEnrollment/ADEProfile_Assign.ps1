@@ -1,5 +1,5 @@
-Import-Module Microsoft.Graph.DeviceManagement.Enrolment
-Import-Module Microsoft.Graph.DeviceManagement.Actions
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Enrollment
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Actions
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -11,10 +11,8 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# Get-MgDeviceManagementDepOnboardingSetting not yet available in v1.0, using beta endpoint
-Select-MgProfile -Name beta
-
-$ADETokens = Get-MgDeviceManagementDepOnboardingSetting
+# Retrieve ADE (DEP) tokens
+$ADETokens = Get-MgBetaDeviceManagementDepOnboardingSetting
 
 if ($ADETokens.Count -eq 0) {
     Write-Host "No ADE tokens found."
@@ -34,7 +32,7 @@ if ($ADETokenId -eq $null -or $ADETokenId -notin $ADETokens.Id) {
     break
 }
 
-$EnrollmentProfiles = Get-MgDeviceManagementDepOnboardingSettingEnrollmentProfile -DepOnboardingSettingId $ADETokenId 
+$EnrollmentProfiles = Get-MgBetaDeviceManagementDepOnboardingSettingEnrollmentProfile -DepOnboardingSettingId $ADETokenId 
 $EnrollmentProfiles | Select-Object DisplayName, Id | Format-Table -AutoSize
 
 $EnrollmentProfileToAssign = Read-Host "Please enter the enrollment profile ID to assign to the device and press enter"
@@ -45,7 +43,7 @@ if (($EnrollmentProfileToAssign -eq $null) -or ($EnrollmentProfileToAssign -noti
 }
 else {
     $DeviceSerialNumber = Read-Host "Please enter the device serial number you want to assign the enrollment profile to and press enter"
-    Update-MgDeviceManagementDepOnboardingSettingEnrollmentProfileDeviceProfileAssignment -DepOnboardingSettingId $ADETokenId -EnrollmentProfileId $EnrollmentProfileToAssign -DeviceIds $DeviceSerialNumber 
+    Update-MgBetaDeviceManagementDepOnboardingSettingEnrollmentProfileDeviceProfileAssignment -DepOnboardingSettingId $ADETokenId -EnrollmentProfileId $EnrollmentProfileToAssign -DeviceIds $DeviceSerialNumber 
     if ($?) {
         Write-Host "Enrollment profile $EnrollmentProfileToAssign assigned successfully to $DeviceSerialNumber." -ForegroundColor Green
     }

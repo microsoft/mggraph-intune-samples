@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.DeviceManagement.Enrolment
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Enrollment
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -9,10 +9,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/get-started?view=graph-pow
 For details on using app-only access for unattended scenarios, see Use app-only authentication with the Microsoft Graph PowerShell SDK:
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
-
-# using beta endpoint for this sample as it is not yet available in v1.0
-$Version = "beta"
-Select-MgProfile -Name $Version
 
 # get the path to save the QR code image
 Write-Host
@@ -41,7 +37,7 @@ if (!(Test-Path "$ExportPath")) {
 }
 
 # Get all Android dedicated device profiles
-$EnrollmentProfiles = Get-MgDeviceManagementAndroidDeviceOwnerEnrollmentProfile -Filter "EnrollmentMode eq 'corporateOwnedDedicatedDevice'"
+$EnrollmentProfiles = Get-MgBetaDeviceManagementAndroidDeviceOwnerEnrollmentProfile -Filter "EnrollmentMode eq 'corporateOwnedDedicatedDevice'"
 $EnrollmentProfiles | Format-Table -AutoSize
 Write-Host
 
@@ -74,7 +70,7 @@ $confirmExport = Read-Host "Do you want to continue? (Y/N)"
 # If user confirms, export the QR code
 switch ($confirmExport) {
     "Y" {
-        $QR = Get-MgDeviceManagementAndroidDeviceOwnerEnrollmentProfile -AndroidDeviceOwnerEnrollmentProfileId $AndroidDeviceOwnerEnrollmentProfileId -Select qrCodeImage
+        $QR = Get-MgBetaDeviceManagementAndroidDeviceOwnerEnrollmentProfile -AndroidDeviceOwnerEnrollmentProfileId $AndroidDeviceOwnerEnrollmentProfileId -Select qrCodeImage
         $QRType = $QR.qrCodeImage.type
         $QRValue = $QR.qrCodeImage.value
         

@@ -14,8 +14,6 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 #>
 
-Select-MgProfile -Name v1.0
-
 # Using get-mgdeviceappmanagementandroid/iosmanagedappprotection rather than get-mgdeviceappmanagementmanagedapppolicy to filter out app configuration policies
 $AndroidPolicies = Get-MgDeviceAppManagementAndroidManagedAppProtection -Property Id, DisplayName, Description
 $iOSPolicies = Get-MgDeviceAppManagementiOSManagedAppProtection -Property Id, DisplayName, Description

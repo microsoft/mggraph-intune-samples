@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.DeviceManagement.Enrolment
+Import-Module Microsoft.Graph.Beta.DeviceManagement.Enrollment
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -10,12 +10,8 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-# Required Graph beta endpoint, some calls not yet available in v1.0
-$Version = "beta"
-Select-MgProfile -Name $Version
-
 # Getting all Platform Enrollment Restrictions
-$PlatformRestrictions = Get-MgDeviceManagementDeviceEnrollmentConfiguration -Filter ("DeviceEnrollmentConfigurationType eq 'singlePlatformRestriction'")
+$PlatformRestrictions = Get-MgBetaDeviceManagementDeviceEnrollmentConfiguration -Filter ("DeviceEnrollmentConfigurationType eq 'singlePlatformRestriction'")
 
 foreach ($Policy in $PlatformRestrictions) {
     Write-Host
@@ -31,7 +27,7 @@ foreach ($Policy in $PlatformRestrictions) {
     elseif ($Policy.Id.Contains("SinglePlatformRestriction") -and $Policy.AdditionalProperties.platformType.Contains("androidForWork")) {
         Write-Host $Policy.DisplayName
         Write-Host 'Priority:'$Policy.Priority''
-        $Assignments = Get-MgDeviceManagementDeviceEnrollmentConfigurationAssignment -DeviceEnrollmentConfigurationId $Policy.Id
+        $Assignments = Get-MgBetaDeviceManagementDeviceEnrollmentConfigurationAssignment -DeviceEnrollmentConfigurationId $Policy.Id
 
         Write-Host "Android Enterprise restrictions: " 
         $Policy.AdditionalProperties.platformRestriction | Format-Table -HideTableHeaders

@@ -10,8 +10,6 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-Select-MgProfile -Name v1.0
-
 # Using Invoke-MgGraphRequest instead of Get-MgDeviceManagementManagedDeviceOverview as it contains more OS information
 $Overview = Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/beta/deviceManagement/managedDeviceOverview" -Method GET -ContentType "application/json" 
 
