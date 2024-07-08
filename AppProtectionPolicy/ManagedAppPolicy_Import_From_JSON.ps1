@@ -13,76 +13,81 @@ For details on using app-only access for unattended scenarios, see Use app-only 
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal 
 #>
 
-$ImportPath = Read-Host -Prompt "Please specify a path to a JSON file to import data from e.g. C:\IntuneOutput\Policies\policy.json"
+$ImportPath = Read-Host -Prompt "Please specify a path to a Json file to import data from e.g. C:\IntuneOutput\Policies\policy.Json"
 
 # Replacing quotes for Test-Path
 $ImportPath = $ImportPath.replace('"', '')
 
 # Check if the path exists
 if (!(Test-Path "$ImportPath")) {
-    Write-Host "Import Path for JSON file doesn't exist..." -ForegroundColor Red
+    Write-Host "Import Path for Json file doesn't exist..." -ForegroundColor Red
     Write-Host "Script can't continue..." -ForegroundColor Red
     Write-Host
     break
 }
 
-#function to test if the JSON is valid
-Function Test-JSON() {
+#function to test if the Json is valid
+Function Test-Json() {
 
     <#
     .SYNOPSIS
-    This function is used to test if the JSON passed to a REST Post request is valid
+    This function is used to test if the Json passed to a REST Post request is valid
     .DESCRIPTION
-    The function tests if the JSON passed to the REST Post is valid
+    The function tests if the Json passed to the REST Post is valid
     .EXAMPLE
-    Test-JSON -JSON $JSON
-    Test if the JSON is valid before calling the Graph REST interface
+    Test-Json -Json $Json
+    Test if the Json is valid before calling the Graph REST interface
     .NOTES
-    NAME: Test-JSON
+    NAME: Test-Json
     #>
     
     param ( 
-        $JSON  
+        $Json  
     )
     
     try {
-        $TestJSON = ConvertFrom-Json $JSON -ErrorAction Stop
-        $validJson = $true  
+        ConvertFrom-Json $Json -ErrorAction Stop
     }
-    
     catch {
-        $validJson = $false
+        Write-Host "Provided Json isn't in valid Json format" -f Red
         $_.Exception
-    }
-    
-    if (!$validJson) {
-        Write-Host "Provided JSON isn't in valid JSON format" -f Red
         break
     }
 }
 
-$JSON_Data = Get-Content $ImportPath
+$Json_Data = Get-Content $ImportPath
 
 # Excluding entries that are not required - id,createdDateTime,lastModifiedDateTime,version
-$JSON_Convert = $JSON_Data | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty id, createdDateTime, lastModifiedDateTime, version, deployedAppCount
-$JSON_Apps = $JSON_Convert.apps | Select-Object * -ExcludeProperty id, version
+$Json_Converted = $Json_Data | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty id, createdDateTime, lastModifiedDateTime, version, deployedAppCount
 
-$JSON_Convert | Add-Member -MemberType NoteProperty -Name 'apps' -Value @($JSON_Apps) -Force
+#If the appGroupType is selectedPublicApps, include the apps property
+#If the appGroupType is not selectedPublicApps, exclude the apps property as the service will populate it
+if ($Json_Converted.appGroupType -ne 'selectedPublicApps') {
+    $Json_Converted = $Json_Data | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty apps
+}
 
-$DisplayName = $JSON_Convert.displayName
-$JSON_Output = $JSON_Convert | ConvertTo-Json -Depth 5
+$DisplayName = $Json_Converted.displayName
+$Json_Output = $Json_Converted | ConvertTo-Json -Depth 5
 
-Test-Json -Json $JSON_Output
+Test-Json -Json $Json_Output
             
-Write-Host
 Write-Host "App Protection Policy '$DisplayName' Found..." -ForegroundColor Cyan
-Write-Host
-$JSON_Output
-Write-Host
-Write-Host "Adding App Protection Policy '$DisplayName'" -ForegroundColor Yellow
-Write-Host "Creating Policy..."
-Write-Host
+Write-Host "Importing Policy..." -ForegroundColor Yellow
 
-$CreateResult = New-MgDeviceAppMgtiOSManagedAppProtection -BodyParameter $JSON_Output
+try {
+    #Check if the policy is for iOS or Android and create the policy accordingly
+    if ($Json_Converted.'@odata.context'.StartsWith('https://graph.microsoft.com/beta/$metadata#deviceAppManagement/iosManagedAppProtections')) {
+        $CreateResult = New-MgDeviceAppMgtiOSManagedAppProtection -BodyParameter $Json_Output
+    }
+    elseif ($Json_Converted.'@odata.context'.StartsWith('https://graph.microsoft.com/beta/$metadata#deviceAppManagement/androidManagedAppProtections')) {
+        $CreateResult = New-MgDeviceAppMgtAndroidManagedAppProtection -BodyParameter $Json_Output
+    }
 
-Write-Host "Policy created with id" $CreateResult.id
+    Write-Host "Policy created with id" $CreateResult.id -ForegroundColor Green
+
+}
+catch {
+    Write-Host "Error creating policy" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    break
+}
