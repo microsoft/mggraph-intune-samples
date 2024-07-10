@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.Devices.CorporateManagement
+Import-Module Microsoft.Graph.Beta.Devices.CorporateManagement
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -15,9 +15,9 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 
 
 # Managed device app configuration policies (MDM channel)
-$ManagedDeviceAppConfigPolicies = Get-MgDeviceAppManagementMobileAppConfiguration -Property Id, DisplayName, Description
+$ManagedDeviceAppConfigPolicies = Get-MgBetaDeviceAppManagementMobileAppConfiguration -All -Property Id, DisplayName, Description
 # Managed app app configuration policies (MAM channel)
-$ManagedAppAppConfigPolicies = Get-MgDeviceAppManagementTargetedManagedAppConfiguration -Property Id, DisplayName, Description
+$ManagedAppAppConfigPolicies = Get-MgBetaDeviceAppManagementTargetedManagedAppConfiguration -All -Property Id, DisplayName, Description
 
 if (($ManagedDeviceAppConfigPolicies.Length -eq 0) -and ($ManagedAppAppConfigPolicies.Length -eq 0)) {
     Write-Host "No policies found" -ForegroundColor Red

@@ -1,4 +1,4 @@
-Import-Module Microsoft.Graph.Devices.CorporateManagement
+Import-Module Microsoft.Graph.Beta.Devices.CorporateManagement
 
 <# region Authentication
 To authenticate, you'll use the Microsoft Graph PowerShell SDK. If you haven't already installed the SDK, see this guide:
@@ -104,7 +104,7 @@ Write-Host
 
 switch ($AppConfigType) {
     "ManagedAppConfig" { 
-        $CreatedResult = New-MgDeviceAppManagementTargetedManagedAppConfiguration -BodyParameter $JSON_Output
+        $CreatedResult = New-MgBetaDeviceAppManagementTargetedManagedAppConfiguration -BodyParameter $JSON_Output
         if ($null -ne $CreatedResult.id) {
             Write-Host "Policy created with id" $CreatedResult.Id
         }
@@ -113,7 +113,7 @@ switch ($AppConfigType) {
         }
     }
     "ManagedDeviceAppConfig" {
-        $CreatedResult = New-MgDeviceAppManagementMobileAppConfiguration -BodyParameter $JSON_Output
+        $CreatedResult = New-MgBetaDeviceAppManagementMobileAppConfiguration -BodyParameter $JSON_Output
         if ($null -ne $CreatedResult.id) {
             Write-Host "Policy created with id" $CreatedResult.Id
         }
