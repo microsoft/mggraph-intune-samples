@@ -59,7 +59,7 @@ Write-Host
 foreach ($Id in $ManagedDeviceAppConfigPolicies.Id) {
     try {
         #Example export using Get-MgDeviceAppManagementMobileAppConfiguration with JSON manipulation to add additionalProperties in the proper format for later import.
-        $Policy = Get-MgDeviceAppManagementMobileAppConfiguration -ManagedDeviceMobileAppConfigurationId $Id | Select-Object  Id, displayName, targetedMobileApps, additionalProperties
+        $Policy = Get-MgBetaDeviceAppManagementMobileAppConfiguration -ManagedDeviceMobileAppConfigurationId $Id | Select-Object  Id, displayName, targetedMobileApps, additionalProperties
         #Extract the properties within additionalProperties from the object and add them as a root properties 
         $AdditionalProperties = $Policy.AdditionalProperties
         $Policy | Add-Member -NotePropertyMembers $AdditionalProperties -Force 
