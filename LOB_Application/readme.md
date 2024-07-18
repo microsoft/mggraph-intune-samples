@@ -47,12 +47,12 @@ https://learn.microsoft.com/en-us/powershell/microsoftgraph/get-started?view=gra
 2. To upload an iOS LOB app into your tenant, run the ```Invoke-iOSLobAppUpload``` function specifying the .ipa path (```-SourceFile```), Intune Display Name (```-displayName```), Publisher (```-publisher```), and description (```-Description```)
 
 ```PowerShell
-Invoke-iOSLobAppUpload -SourceFile "C:\IntuneApps\MyLobApp.ipa" -displayName "My Test LOB App" -Publisher "Contoso" -Description "A test iOS app to upload."
+Invoke-iOSLobAppUpload -SourceFile ".\MyLobApp.ipa" -displayName "My Test LOB App" -Publisher "Contoso" -Description "A test iOS app to upload."
 ```
 ```
 Creating JSON data to pass to the service...
 ```
-Note: If the script is unable to extract and parse these values from the app payload (for example, the app payload is obfuscated or signed), it prompts for them to be entered manually.
+Note: If the script is unable to extract and parse these values from the app payload (for example, the app payload is obfuscated or signed), it prompts for them to be entered manually. The .IPA file must be in the same folder path the script is executed from.
 ```
 Unable to extract the app's bundleId (CFBundleIdentifier). Please enter it manually: com.contoso.test       
 Unable to extract the app's buildNumber (CFBundleVersion). Please enter it manually: 1.23045.11 
