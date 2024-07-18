@@ -14,7 +14,7 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 $ExtractedPath = Join-Path -Path $env:TEMP -ChildPath ([System.IO.Path]::GetRandomFileName())
 
 #Base URL for Graph API calls
-$baseUrl = "https://graph.microsoft.com/$version/deviceAppManagement/"
+$baseUrl = "https://graph.microsoft.com/v1.0/deviceAppManagement/"
 
 $sleep = 30
 
