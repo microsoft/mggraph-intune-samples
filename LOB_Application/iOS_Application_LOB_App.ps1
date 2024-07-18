@@ -554,4 +554,4 @@ function Invoke-iOSLobAppUpload() {
 }
 
 ## Example
-#Invoke-iOSLobAppUpload -SourceFile "C:\IntuneApps\MyLobApp.ipa" -displayName "A test application to deploy via Intune" -Publisher "Contoso" -Description "A test application to deploy via Intune."
+#Invoke-iOSLobAppUpload -SourceFile ".\MyLobApp.ipa" -displayName "A test application to deploy via Intune" -Publisher "Contoso" -Description "A test application to deploy via Intune."
