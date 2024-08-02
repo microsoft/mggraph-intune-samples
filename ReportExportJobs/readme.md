@@ -74,3 +74,44 @@ $Json
 #To display the report in table format in the terminal after it has been succesfully generated:
 $Table
 ```
+
+### 2. Add_IntuneUsersWithManagedDevicesToGroup.ps1
+This script performs the following actions against the Intune and Entra ID service that you have authenticated with:
+
+1. Creates a report export job in the Intune service using the top-level export API. The report used is the 'DevicesWithInventory' report, and we're only retrieving UPNs.  (https://learn.microsoft.com/en-us/mem/intune/fundamentals/reports-export-graph-apis?source=recommendations)
+2. Polls the service until the export job has completed, and the .zip file containing the report in .csv format is ready for download.
+3. Downloads the .zip file to specified path.
+4. Extracts the .csv report file.
+5. Processes the .csv file and removes duplicate UPN entries (E.G. users with multiple devices).
+6. Deletes the .zip and .csv report files.
+7. Loops through the users list and adds them to the specified Entra ID security group.
+
+The script generates the DeviceEncryption report using the following request:
+
+```JSON
+    {
+    "reportName":"DevicesWithInventory",
+    "filter":"((ManagementAgents eq ''2'') or (ManagementAgents eq ''512'') or (ManagementAgents eq ''514'') or (ManagementAgents eq ''64''))",
+    "select":["UPN"],
+    "format": "csv",
+    }
+```
+
+For more information on crafting the report request body, see https://learn.microsoft.com/en-us/mem/intune/fundamentals/reports-export-graph-apis
+
+### Running the script
+1. Run the script in an IDE such as VS Code.
+
+####
+```PowerShell
+.\Add_IntuneUsersWithManagedDevicesToGroup.ps1
+
+#Specify the Entra ID Assigned Security Group ID
+$groupId = "39c1918e-1235-4835-9a20-123456789930"
+
+#Export the report and get the members
+$members = Get-IntuneUsersWithManagedDevices -ExportPath "C:\Temp"
+
+#Add the members to the group
+Add-MembersToGroup -members $members -groupId $groupId
+```
