@@ -7,9 +7,6 @@ See LICENSE in the project root for license information.
 ####################################################
 
 param(
-    [Parameter(HelpMessage = "Entra ID Username", Mandatory = $true)]
-    [string]
-    $Username,
     [Parameter(HelpMessage = "User principal name to export data for", Mandatory = $true)]
     [string]
     $Upn,
@@ -67,8 +64,8 @@ function Log-Error ($message) {
 
 function Log-FatalError($message) {
     Write-Error "[$([System.DateTime]::Now)] - $message" -WarningAction Continue
-    Write-Error "Script will now exit"
-    exit
+    Write-Error "Script will now break"
+    break
 }
 
 ####################################################
@@ -86,42 +83,34 @@ function Test-GraphSession {
     NAME: Test-GraphSession
     #>
     
-    [cmdletbinding()]
-    
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        $User
-    )
-    
-    Write-Host "Checking for Microsoft.Graph and Microsoft.Graph.Beta modules..."
+    Write-Host "Checking for Microsoft.Graph.Authentication module..." -f Yellow
     try {
-        $GraphBetaModule = Get-Module -Name "Microsoft.Graph.Beta" -ListAvailable
-        $GraphModule = Get-Module -Name "Microsoft.Graph" -ListAvailable
+        $GraphModule = Get-Module -Name "Microsoft.Graph.Authentication" -ListAvailable
         $Scopes = @("User.Read.All", "DeviceManagementManagedDevices.Read.All", "DeviceManagementConfiguration.Read.All", "DeviceManagementApps.Read.All", "DeviceManagementServiceConfig.Read.All")
     
-        if ($null -eq $GraphModule -and $null -eq $GraphBetaModule) {
+        if ($null -eq $GraphModule) {
             write-host
             write-host "Microsoft Graph PowerShell SDK module not installed..." -f Red
-            write-host "Install by running 'Install-Module Microsoft.Graph.Beta' or 'Install-Module Microsoft.Graph.Beta' from an elevated PowerShell prompt" -f Yellow
+            write-host "Install by running 'Install-Module Microsoft.Graph.Authentication' from an elevated PowerShell prompt" -f Yellow
             write-host "Script can't continue..." -f Red
             write-host
-            exit
+            break
         }
-        elseif ($null -ne $GraphModule -and $null -ne $GraphBetaModule) {
+        elseif ($null -ne $GraphModule) {
             write-host "Microsoft Graph PowerShell SDK module found..." -f Green
-            #Check if user is already logged in
-            $User = $User.ToLowerInvariant()
             $SessionDetails = Get-MgContext
 
+            Write-Host "Checking Graph session..." -f Yellow
             if ($null -eq $SessionDetails) {
                 write-host
                 write-host "User not logged in..." -f Red
                 write-host "Please login using 'Connect-MgGraph' prior to running this script. See here for more information: https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0" -f Yellow
                 write-host "Script can't continue..." -f Red
                 write-host
-                exit
+                break
             }
+            write-host "Validating scope permissions..." -f Yellow
+
             foreach ($Permission in $Scopes) {
                 if ($SessionDetails.Scopes -notcontains $Permission) {
                     write-host
@@ -129,14 +118,10 @@ function Test-GraphSession {
                     write-host "Please login using 'Connect-MgGraph' with the following scopes: User.Read.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.Read.All, DeviceManagementApps.Read.All, DeviceManagementServiceConfig.Read.All" -f Yellow
                     write-host "Script can't continue..." -f Red
                     write-host
-                    exit
+                    break
                 }
             }
-            Write-Host
-            write-host "User already logged in..." -f Green
-            write-host
             Write-Host "Required permissions found..." -f Green
-            write-host
         }
     }
     catch {
@@ -189,7 +174,7 @@ function Get-MsGraphCollection($Path) {
             Log-Error "Response Content:`n$_"
             break
         }
-    } while ($NextLink -ne $null)
+    } while ($null -ne $NextLink)
     Log-Verbose "Got $($Collection.Count) object(s)"
 
     return $Collection
@@ -197,7 +182,7 @@ function Get-MsGraphCollection($Path) {
 
 ####################################################
 
-function Post-MsGraphObject($Path, $RequestBody) {
+function Invoke-MSGraphPostCommand($Path, $RequestBody) {
     $FullUri = "https://$MsGraphHost/$MsGraphVersion/$Path"
 
     try {
@@ -265,7 +250,7 @@ function Get-RegisteredDevices {
 function Get-ManagedDevices {
     Log-Info "Getting managed devices for User $UPN"
     
-    $DeviceIds = @(Get-MsGraphCollection "users/$UserId/managedDevices?`$select=id" | Select-Object -ExpandProperty id)
+    $DeviceIds = @(Get-MsGraphCollection "users/$UserId/managedDevices?`$select=id").Values
 
     $Devices = @()
 
@@ -473,7 +458,6 @@ function Get-ManagedDeviceMobileAppConfigurationStatuses ($Devices) {
     $MobileAppConfigurationsStatuses = @()
     $MobileAppConfigurations = Get-MsGraphCollection "deviceAppManagement/mobileAppConfigurations"
     
-    $DeviceIds = $Devices | Select-Object -ExpandProperty id
 
     foreach ($MobileAppConfiguration in $MobileAppConfigurations) {
         $DeviceStatuses = Get-MsGraphCollection "deviceAppManagement/mobileAppConfigurations/$($MobileAppConfiguration.id)/deviceStatuses"
@@ -482,7 +466,8 @@ function Get-ManagedDeviceMobileAppConfigurationStatuses ($Devices) {
 
         $DeviceStatusesForUser = @()
         
-        foreach ($DeviceId in $DeviceIds) {
+        foreach ($Device in $ManagedDevices) {
+            $DeviceId = [string]$Device.id
             $DeviceStatusesForUser += $DeviceStatuses | Where-Object { 
                 $_.id.Contains($DeviceId)
             }
@@ -647,7 +632,7 @@ function Get-TermsAndConditionsAcceptanceStatuses {
 function Export-IntuneReportUsingGraph($RequestBody, $ZipName) {
     Log-Info "Exporting Intune Report Using Graph for user '$UPN'"
 
-    $IntuneReportDataPOSTResponse = Post-MsGraphObject "deviceManagement/reports/exportJobs" $RequestBody
+    $IntuneReportDataPOSTResponse = Invoke-MSGraphPostCommand "deviceManagement/reports/exportJobs" $RequestBody
     Log-Verbose $IntuneReportDataPOSTResponse
 
     $ReportId = $IntuneReportDataPOSTResponse.Id
@@ -838,7 +823,7 @@ function Filter-Entity {
     }
 }
 
-Test-GraphSession $Username
+Test-GraphSession
 
 ####################################################
 
