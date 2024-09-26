@@ -13,20 +13,19 @@ Within this section there are the following scripts with the explanation of usag
 The script exports Intune data related to the specific user.
 
 ```PowerShell
-Export-IntuneData.ps1 -Username admin@contoso.com -Upn user@contoso.com -OutputPath c:\export\user
+.\Export-IntuneData.ps1 -Upn user@contoso.com -All -OutputPath c:\export\user
 ```
 
-Note that this script requires either the ```Microsoft.Graph``` or ```Microsoft.Graph.Beta``` PowerShell modules installed. To install the module you can run:
+Note that this script requires  the ```Microsoft.Graph.Authentication``` PowerShell module installed. To install the module you can run:
 
 ```PowerShell
-Install-Module Microsoft.Graph -Scope CurrentUser
+Install-Module Microsoft.Graph.Authentication -Scope CurrentUser
 ```
 
 Here is a description of the parameter you can pass the script:
 
 | Parameter | Required? | Description |
 |-----------|-----------|-------------|
-| Username | Yes | Entra ID Username for the Administrator |
 | Upn | Yes | User principal name to export data for |
 | IncludeAzureAD | No | Include Entra ID data in the export |
 | IncludeNonAzureADUpn | No | Include data For Non Entra ID Upn in export |
@@ -41,14 +40,14 @@ Here is a description of the parameter you can pass the script:
 ### How to run the Export script:
 
 1. Download both the PS1 file and the ExportConfiguration.json file from the script location
-2. Run, **Install-Module Microsoft.Graph -Scope CurrentUser**
+2. Run, **Install-Module Microsoft.Graph.Authentication -Scope CurrentUser**
 3. Authenticate, using **Connect-MgGraph**
 4. Navigate to the folder that contains the PowerShell script **Export-IntuneData.ps1**
 5. Run the export script (see example below):
 **UserName** is the Tenant Admin User Name and **UPN** is the Target User (Data Subject) for whom you want to export the data
 
 ```PowerShell
-    .\Export-IntuneData.ps1 -UserName admin@contoso.onmicrosoft.com -UPN adamprice@contoso.onmicrosoft.com -Outputpath c:\IntuneExport\
+    .\Export-IntuneData.ps1 -UPN adamprice@contoso.onmicrosoft.com -All -Outputpath c:\IntuneExport\
 ```
 
 5. Navigate to export folder to see exported files
@@ -68,8 +67,8 @@ This file captures the User Specific information retained in the Service. **Data
 | UserEmail | `adam@contoso.com` | User’s email id (if available) |
 | UserIdentity | `1234567890abcdef@microsoftonline.com` | Organizational Personal Identifier |
 | OnPremisesUpn | `adamprice@contoso.exchange.com` | UPN synced from ActiveDirectory to Azure Active Directory. In most cases this will be the same as the UPN |
-| AzureADTenantId | `0e987367-3209-4bd5-a728-d0e4f4a4a3b5` | Internal Representation of the Tenant the user is associated with |
-| UserId | `f146ab3e-825e-4f22-ab01-983cf8390524` | The internal representation of the AAD User |
+| AzureADTenantId | `0e987367-3209-0000-1111-d0e4f4a4a3b5` | Internal Representation of the Tenant the user is associated with |
+| UserId | `f146ab3e-825e-1111-2222-983cf8390524` | The internal representation of the AAD User |
 
 #### ManagedDevices.json
 
@@ -78,13 +77,13 @@ This file captures the User Specific information retained in the Service. **Data
 
 | Value | Example | Description |
 |-------|---------|-------------|
-| ID | `5596f49c-c0bf-4cbb-baf3-dc11090dec05` | Internal identifier of the device  |
+| ID | `5596f49c-c0bf-1234-baif-dc11090dec05` | Internal identifier of the device  |
 | DeviceName | `Adam Price test device` | Actual name of the device enrolled in the service |
 | UserEmail | `adam@contoso.com` | User's email id (if available) |
 | HardwareInformation | <p>See actual results for full list. Representative examples include:<br />`"serialNumber":  "ABCD1234EFG"`,<br />`"imei":  null`,<br/>`"manufacturer": "samsung"`,<br />`"model":  "SM-T230NU"`,<br />`"phoneNumber": "555-123-1234"`,<br />`"wifiMac": "00:11:22:33:44:55"`</p> | The available information about the device enrolled in the service |
 | OnPremisesUpn | `adamprice@contoso.exchange.com` | UPN synced from ActiveDirectory to Azure Active Directory. In most cases this will be the same as the UPN |
-| AzureADTenantId | `0e987367-3209-4bd5-a728-d0e4f4a4a3b5` | Internal Representation of the Tenant the user is associated with |
-| UserId | `f146ab3e-825e-4f22-ab01-983cf8390524` | The internal representation of the AAD |
+| AzureADTenantId | `0e987367-3209-4bd5-0000-d0e4f4a41234` | Internal Representation of the Tenant the user is associated with |
+| UserId | `f146ab3e-825e-4f22-ab01-983cf8344444` | The internal representation of the AAD |
 | DetectedApps | See actual results for full list. Representative examples include:<br/>`"id": "3d413fb3d8ed45798213fb3d8ed457982d09d57a1c62928"`,<br/>`"displayName": "Company Portal"`,<br/>`"version": "5.0.3667.0"` | Details of the Apps installed on the Device |
 | DeviceConfigurationStates | See actual results for full list. Representative examples include:<br/>`"id": "585285f6-b26a-4fdf-806b-96d34748ab3f"`,<br/>`"setting": "AndroidWiFiConfiguration"`,<br/>`"state": "compliant"`,<br/>`"errorDescription": "No error code"`,<br/>`"sources": [{ "id": "4f7102c7-1a28-44f8-bd3c-51aa2371e38f", "displayName": "Contoso Office Guest" }]` | Specifics about the Device Configuration and the state against these configurations. IDs in this section are internal representations of the Configuration Setting |
 | DeviceCompliancePolicyStates | See actual results for full list. Representative examples include:<br/> `"id": "5079ffb4-057a-4b8f-8dc1-66279a2b8244"`,<br/>`"setting":  "DefaultDeviceCompliancePolicy.RequireUserExistence"`,<br/> `"state": "compliant"` | Specifics about the Device Configuration and the state against these configurations. IDs in this section are internal representations of the Compliance Polices |
@@ -96,9 +95,9 @@ This file captures the information pertaining to the Apps as retained in the Ser
 
 | Value | Example | Description |
 |-------|---------|-------------|
-| deviceId | `7351edd8-942f-4a6a-abfa-9eedd796b2fa` | Internal ID for the managed device |
+| deviceId | `7351edd8-942f-4a6a-abfa-9eedd7960123` | Internal ID for the managed device |
 | deviceName | `Mark's Surface Pro` | Device name of the managed device   |
-| installedApps | See actual results for full list. Representative examples include:<br/> `"id":  ""installState": "installed", "applicationId": "b2008d7e-878f-4e58-9a26-797d7a7092ac", "informationUrl": null, "publisher": "Microsoft", "owner": "", "developer": "", "mobileAppIntent": "requiredInstall", "displayVersion": " (5.2408.0)", "privacyInformationUrl": null,"displayName": "Company Portal""`,<br/>`"deviceName":  "DESKTOP"`,<br/> `"deviceId":  "09c7bb08-b7bb-47ca-9c6b-86761df25504"` | IDs in this section represent the internal representations of the application, install status, application IDs etc.     |
+| installedApps | See actual results for full list. Representative examples include:<br/> `"id":  ""installState": "installed", "applicationId": "b2008d7e-878f-4e58-9a26-797d7a7092ac", "informationUrl": null, "publisher": "Microsoft", "owner": "", "developer": "", "mobileAppIntent": "requiredInstall", "displayVersion": " (5.2408.0)", "privacyInformationUrl": null,"displayName": "Company Portal""`,<br/>`"deviceName":  "DESKTOP"`,<br/> `"deviceId":  "1237bb08-b74g-47ca-9c6b-86761df25504"` | IDs in this section represent the internal representations of the application, install status, application IDs etc.     |
 
 #### Devices.json
 
