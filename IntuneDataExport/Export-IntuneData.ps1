@@ -89,12 +89,10 @@ function Test-GraphSession {
         $Scopes = @("User.Read.All", "DeviceManagementManagedDevices.Read.All", "DeviceManagementConfiguration.Read.All", "DeviceManagementApps.Read.All", "DeviceManagementServiceConfig.Read.All")
     
         if ($null -eq $GraphModule) {
-            write-host
             write-host "Microsoft Graph PowerShell SDK module not installed..." -f Red
-            write-host "Install by running 'Install-Module Microsoft.Graph.Authentication' from an elevated PowerShell prompt" -f Yellow
+            write-host "Install by running 'Install-Module Microsoft.Graph.Authentication'" -f Yellow
             write-host "Script can't continue..." -f Red
-            write-host
-            break
+            return $false
         }
         elseif ($null -ne $GraphModule) {
             write-host "Microsoft Graph PowerShell SDK module found..." -f Green
@@ -102,27 +100,24 @@ function Test-GraphSession {
 
             Write-Host "Checking Graph session..." -f Yellow
             if ($null -eq $SessionDetails) {
-                write-host
                 write-host "User not logged in..." -f Red
                 write-host "Please login using 'Connect-MgGraph' prior to running this script. See here for more information: https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0" -f Yellow
                 write-host "Script can't continue..." -f Red
-                write-host
-                break
+                return $false
             }
             write-host "Validating scope permissions..." -f Yellow
 
             foreach ($Permission in $Scopes) {
-                if ($SessionDetails.Scopes -notcontains $Permission) {
-                    write-host
+                if ($Permission -notin $SessionDetails.Scopes) {
                     write-host "User not logged in with required permissions..." -f Red
                     write-host "Please login using 'Connect-MgGraph' with the following scopes: User.Read.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.Read.All, DeviceManagementApps.Read.All, DeviceManagementServiceConfig.Read.All" -f Yellow
                     write-host "Script can't continue..." -f Red
-                    write-host
-                    break
+                    return $false
                 }
             }
-            Write-Host "Required permissions found..." -f Green
         }
+        Write-Host "Required permissions found..." -f Green
+        return $true
     }
     catch {
         write-host $_.Exception.Message -f Red
@@ -823,7 +818,9 @@ function Filter-Entity {
     }
 }
 
-Test-GraphSession
+if (-not (Test-GraphSession)) {
+    break
+}
 
 ####################################################
 
