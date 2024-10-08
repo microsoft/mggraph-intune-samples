@@ -1039,7 +1039,7 @@ function Invoke-Win32AppUpload {
 
         <#
         if ($mobileAppId) {
-            Write-Host "Removing the incokplete application record from Intune..." -ForegroundColor Yellow
+            Write-Host "Removing the incomplete application record from Intune..." -ForegroundColor Yellow
             Remove-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId
         }
         #>
