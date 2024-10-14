@@ -26,3 +26,8 @@ The script will show the following warning before export.
 ```
 ### 3. Get-AndroidWorkProfileConfiguration.ps1
 This script queries the Intune Service and returns Enrollment Restriction configurations that impact Android Enterprise. If a configuration is found it will list the AAD Groups assigned to it (with the exception of the Default tenant enrollment profile, which is always assigned to All Users).
+
+### 4. AE-EnrollmentProfile_Bulk_Create.ps1
+This script automates the creation of Android Enterprise Dedicated Device enrollment profiles and their associated tokens in Microsoft Intune. The script reads a CSV file containing the desired enrollment profile names (without a header row) and iterates through each profile name. For each profile, it sets a token validity period of 90 days (7776000 seconds), creates an enrollment profile with a specified display name and description, and generates a token for the profile. If the profile or token creation fails, the script catches the exception and logs an error message. Before running the script, you will need to update the ```$csvPath``` variable on line 16 to point to the .csv location on your machine. 
+
+Additionally, the script includes a commented-out section that demonstrates how to perform the same operations in parallel for faster processing, which requires PowerShell 7 or later. 
