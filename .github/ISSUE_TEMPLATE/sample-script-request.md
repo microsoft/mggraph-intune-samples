@@ -7,8 +7,8 @@ assignees: Mahopper
 
 ---
 
-**Is your script request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. Completing task 'xyz' requires numerous steps in the admin console and I would like to see an automated option. [...]
+**What are you trying to solve? Please describe.**
+A clear and concise description of what the challenge is. Ex. Completing task 'xyz' requires numerous steps in the admin console and I would like to see an automated option.
 
 **Describe the script sample you'd like**
 A clear and concise description of what you want to happen.
