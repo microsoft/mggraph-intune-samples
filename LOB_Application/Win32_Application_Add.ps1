@@ -60,8 +60,8 @@ Invoke-Win32AppUpload -SourceFile "C:\IntuneApps\vscode\VSCodeSetup-x64-1.93.1.i
 $returnCodes = Get-DefaultReturnCodes
 $Rules = @()
 $Rules += New-FileSystemRule -ruleType detection -operator notConfigured -check32BitOn64System $false -operationType exists -comparisonValue $null -fileOrFolderName "firefox.exe" -path 'C:\Program Files\Mozilla Firefox\firefox.exe'
-$Rules += New-ProductCodeRule detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F5C3A1A}" -productVersionOperator equal -productVersion "130.0"
-Invoke-Win32AppUpload -SourceFile "E:\LabScriptsAndApps\Firefox\Firefox_Setup_130.0.intunewin" -displayName "Firefox" -publisher "Mozilla" -returnCodes $returnCodes -description "Firefox browser" -Rules $Rules -RunAsAccount "system" -DeviceRestartBehavior "suppress" 
+$Rules += New-ProductCodeRule -ruleType detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F512345}" -productVersionOperator equal -productVersion "130.0"
+Invoke-Win32AppUpload -SourceFile "C:\IntuneApps\Firefox\Firefox_Setup_130.0.intunewin" -displayName "Firefox" -publisher "Mozilla" -returnCodes $returnCodes -description "Firefox browser" -Rules $Rules -RunAsAccount "system" -DeviceRestartBehavior "suppress" 
 
 .EXAMPLE
 # Uploads a Win32 app to Intune using the default return codes, a script detection rule, a script requirement rule, and a registry rule, and a registry rule.
@@ -393,7 +393,7 @@ The value to compare the script output to.
 
 .EXAMPLE
 # Creates a new product code rule for a Win32 app.
-New-ProductCodeRule -ruleType detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F5C3A1A}" -productVersionOperator equal -productVersion "130.0"
+New-ProductCodeRule -ruleType detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F512345}" -productVersionOperator equal -productVersion "130.0"
 #>
 function New-ProductCodeRule {
     param
@@ -417,9 +417,10 @@ function New-ProductCodeRule {
 
     $Rule = @{}
     $Rule."@odata.type" = "#microsoft.graph.win32LobAppProductCodeRule"
+    $Rule.ruleType = $ruleType
     $Rule.productCode = $productCode
-    $Rule.operator = $operator
-    $Rule.comparisonValue = $comparisonValue
+    $Rule.productVersionOperator = $productVersionOperator
+    $Rule.productVersion = $productVersion
 
     return $Rule
 }

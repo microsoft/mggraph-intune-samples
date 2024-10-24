@@ -215,7 +215,7 @@ $Rules += New-FileSystemRule -ruleType detection -operator notConfigured -check3
 To create an MSI detection rule the following can be used:
 
 ```PowerShell
-$MSIRule = New-ProductCodeRule -ruleType detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F5C3A1A}" -productVersionOperator equal -productVersion "130.0"
+$MSIRule = New-ProductCodeRule -ruleType detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F512345}" -productVersionOperator equal -productVersion "130.0"
 ```
 
 If the intunewin file your creating is an MSI you can use the MSI codes stored in the detection.xml file inside the package. This is completed by using the Get-IntuneWinXML function to open the SourceFile and then extracting the detection.xml.
@@ -311,7 +311,7 @@ Invoke-Win32AppUpload -SourceFile "C:\IntuneApps\vscode\VSCodeSetup-x64-1.93.1.i
 $returnCodes = Get-DefaultReturnCodes
 $Rules = @()
 $Rules += New-FileSystemRule -ruleType detection -operator notConfigured -check32BitOn64System $false -operationType exists -comparisonValue $null -fileOrFolderName "firefox.exe" -path 'C:\Program Files\Mozilla Firefox\firefox.exe'
-$Rules += New-ProductCodeRule detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F5C3A1A}" -productVersionOperator equal -productVersion "130.0"
+$Rules += New-ProductCodeRule detection -productCode "{3248F0A8-6813-4B6F-8C3A-4B6C4F512345}" -productVersionOperator equal -productVersion "130.0"
 Invoke-Win32AppUpload -SourceFile "E:\IntuneApps\Firefox\Firefox_Setup_130.0.intunewin" -displayName "Firefox" -publisher "Mozilla" -returnCodes $returnCodes -description "Firefox browser" -Rules $Rules -RunAsAccount "system" -DeviceRestartBehavior "suppress" 
 ```
 
