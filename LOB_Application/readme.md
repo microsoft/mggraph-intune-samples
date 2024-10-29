@@ -325,3 +325,89 @@ $Rules += New-ScriptDetectionRule -ScriptFile "E:\VSCodeDetection.ps1" -EnforceS
 $Rules += New-RegistryRule -ruleType detection -keyPath "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\xyz" -valueName "DisplayName" -operationType string -operator equal -comparisonValue "VSCode"
 Invoke-Win32AppUpload -displayName "VS Code" -SourceFile "C:\IntuneApps\vscode\VSCodeSetup-x64-1.93.1.intunewin" -publisher "Microsoft" -description "VS Code (script detection)" -RunAsAccount "system" -Rules $Rules -returnCodes $returnCodes -InstallCommandLine "VSCodeSetup-x64-1.93.1.exe /VERYSILENT /MERGETASKS=!runcode" -UninstallCommandLine "C:\Program Files\Microsoft VS Code\unins000.exe /VERYSILENT" -DeviceRestartBehavior "basedOnReturnCode"
 ```
+### 3. macOS_Application_PKG_Add.ps1
+The following script sample provides the ability to upload a macOS PKG application to the Intune Service.
+
+### Prerequisites
++ Dependent PowerShell modules:
+    - Microsoft.Graph.Beta.Devices.CorporateManagement
+    - Microsoft.Graph.Authentication
++ An unmanaged PKG (and pre/post scripts, if applicable)
++ Relevant PKG metadata (app bundleIds, versions, etc.)
+
+### Running the script
+1. Run the script in an IDE such as VS Code:
+####
+```PowerShell
+.\macOS_Application_PKG_Add.ps1
+```
+
+2. Construct the parameters for the script (see below for more information on the parameters)
+```PowerShell
+$includedApps = @(
+        @{
+                "@odata.type" = "microsoft.graph.macOSIncludedApp"
+                bundleId      = "com.microsoft.remotehelp"
+                bundleVersion = "1.0"
+        }
+)
+```
+```PowerShell
+Invoke-macOSLobAppUpload -SourceFile "E:\Microsoft_Remote_Help_1.0.2409052_installer.pkg" -displayName "Remote Help" -Publisher "Microsoft" -Description "Remote Help for macOS" -primaryBundleId "com.microsoft.remotehelp" -primaryBundleVersion "1.0" -includedApps $includedApps -minimumSupportedOperatingSystem @{v10_13 = $true } -ignoreVersionDetection $true
+```
+
+3. If successful, the script will return the application information from Intune.
+```
+Application created successfully.
+Application Details:
+
+Assignments           : 
+Categories            : 
+CreatedDateTime       : 10/7/2024 9:59:54 PM
+Description           : Remote Help for macOS
+Developer             : 
+DisplayName           : Remote Help
+Id                    : db6c5c99-2282-4e16-95f4-e0332e10237365
+InformationUrl        : 
+IsFeatured            : False
+LargeIcon             : Microsoft.Graph.PowerShell.Models.MicrosoftGraphMimeContent
+LastModifiedDateTime  : 10/7/2024 9:59:54 PM
+Notes                 : 
+Owner                 : 
+PrivacyInformationUrl : 
+Publisher             : Microsoft
+PublishingState       : published
+AdditionalProperties  : {[@odata.context, https://graph.microsoft.com/v1.0/$metadata#deviceAppManagement/mobileApps/$entity], [@odata.type, #microsoft.graph.macOSPkgApp], [committedContentVersion, 1], [fileName, Microsoft_Remote_Help_1.0.2409052_installer.pkg]…}
+```
+
+### Script parameters
+The following parameters are required when uploading a macOS PKG file via this script sample:
+
++ SourceFile - This is the path to the PKG file
++ displayName - The display name of the application
++ Publisher - The publisher of the application
++ primaryBundleId - The primary bundle ID of the application used for reporting
++ primaryBundleVersion - The primary bundle version of the application
++ includedApps - An array of includedApps objects that represent the included applications in the PKG file
++ ignoreVersionDetection - A boolean value that indicates whether to ignore version detection when uploading the application
+
+An example of this can be found below:
+
+```PowerShell
+# macOS Application Upload
+Invoke-macOSLobAppUpload -SourceFile "$SourceFile" -displayName "DisplayName" -Publisher "Publisher" -primaryBundleId "PrimaryBundleId" -primaryBundleVersion "PrimaryBundleVersion" -includedApps $includedApps -ignoreVersionDetection $true
+```
+
+There are other parameters that can be specified, these include:
+
++ Description - The description of the application
++ minimumSupportedOperatingSystem - The minimum supported operating system for the application
++ preInstallScriptPath - The path to the preInstall script to run before installing the application
++ postInstallScriptPath - The path to the postInstall script to run after installing the application
+
+An example of this is below:
+
+```PowerShell
+# macOS Application Upload
+Invoke-macOSLobAppUpload -SourceFile "E:\CompanyPortal-Installer.pkg" -displayName "Company Portal" -Publisher "Microsoft" -Description "Company Portal for macOS" -primaryBundleId "com.microsoft.com.microsoft.CompanyPortalMac" -primaryBundleVersion "5.2409.1" -includedApps $includedApps -minimumSupportedOperatingSystem @{v10_13 = $true } -ignoreVersionDetection $true -preInstallScriptPath "E:\preInstall.sh" -postInstallScriptPath "E:\postInstall.sh"
+```
