@@ -131,7 +131,7 @@ function Invoke-macOSLobAppUpload() {
         }
 
         # Creating temp file name from Source File path
-        $tempFile = [System.IO.Path]::GetDirectoryName("$SourceFile") + "\" + [System.IO.Path]::GetFileNameWithoutExtension("$SourceFile") + "_temp.bin"
+        $tempFile = [System.IO.Path]::GetDirectoryName("$SourceFile") + "\" + [System.IO.Path]::GetFileNameWithoutExtension("$SourceFile") + [guid]::NewGuid().ToString() + "_temp.bin"
         $fileName = (Get-Item $SourceFile).Name
 
         #Creating Intune app body JSON data to pass to the service
@@ -150,6 +150,7 @@ function Invoke-macOSLobAppUpload() {
 
         # Encrypt file and get file information
         Write-Host "Encrypting the copy of file '$SourceFile'..." -ForegroundColor Yellow
+        
         $encryptionInfo = EncryptFile $SourceFile $tempFile
         $Size = (Get-Item "$SourceFile").Length
         $EncrySize = (Get-Item "$tempFile").Length
@@ -174,17 +175,18 @@ function Invoke-macOSLobAppUpload() {
         # Wait for the service to process the file upload request.
         Write-Host "Waiting for the service to process the file upload request..." -ForegroundColor Yellow
         $file = WaitForFileProcessing $fileUri "AzureStorageUriRequest"
+        $sasUriRenewTime = $file.azureStorageUriExpirationDateTime.AddMinutes(-3)
 
         # Upload the content to Azure Storage.
         Write-Host "Uploading file to Azure Storage..." -f Yellow
-        [UInt32]$BlockSizeMB = 1
-        UploadFileToAzureStorage $file.azureStorageUri $tempFile $BlockSizeMB
+        [UInt64]$BlockSizeMB = 4
+        UploadFileToAzureStorage $file.azureStorageUri $sasUriRenewTime $tempFile $BlockSizeMB 
 
         Write-Host "Committing the file to the service..." -ForegroundColor Yellow
         Invoke-MgBetaCommitDeviceAppManagementMobileAppMicrosoftGraphMacOSPkgAppContentVersionFile -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -MobileAppContentFileId $ContentVersionFileId -BodyParameter ($encryptionInfo | ConvertTo-Json)
 
         # Wait for the service to process the commit file request.
-        Write-Host "Waiting for the service to process the commit file request..." -ForegroundColor Yellow
+        Write-Host "Waiting for the service to process the file commit request..." -ForegroundColor Yellow
         $file = WaitForFileProcessing $fileUri "CommitFile"
 
         # Commit the app.
@@ -197,19 +199,26 @@ function Invoke-macOSLobAppUpload() {
         Update-MgBetaDeviceAppManagementMobileApp -MobileAppId $mobileAppId -BodyParameter $params
 
         # Wait for the service to process the commit app request.
-        Write-Host "Waiting for the service to process the commit app request..." -ForegroundColor Yellow
-        Start-Sleep -Seconds 5
+        Write-Host "Waiting for the service to process the app commit request..." -ForegroundColor Yellow
 
-        # Display the app information from the Intune service
-        $FinalAppStatus = (Get-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId)
-        if ($FinalAppStatus.PublishingState -eq "published") {
-            Write-Host "Application created successfully." -ForegroundColor Green
-            $FinalAppStatus | Format-List
+        $AppCheckAttempts = 25
+        while ($AppCheckAttempts -gt 0) {
+            $AppCheckAttempts--
+            $AppStatus = Get-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId
+            if ($AppStatus.PublishingState -eq "published") {
+                Write-Host "Application created successfully." -ForegroundColor Green
+                break
+            }
+            Start-Sleep -Seconds 3
         }
-        else {
-            #raise exception if the app is not published
+
+        if ($AppStatus.PublishingState -ne "published" -and $AppStatus.PublishingState -ne "processing") {
             Write-Host "Application '$displayName' has failed to upload to Intune." -ForegroundColor Red
             throw "Application '$displayName' has failed to upload to Intune."
+        }
+        else {
+            Write-Host "Application '$displayName' has been successfully uploaded to Intune." -ForegroundColor Green
+            $AppStatus | Format-List
         }
     }
     catch {
@@ -242,10 +251,13 @@ function UploadAzureStorageChunk($sasUri, $id, $body) {
     $headers = @{
         "x-ms-blob-type" = "BlockBlob"
         "Content-Type"   = "application/octet-stream"
+        "Connection"     = "Keep-Alive"
+        "Content-Length" = $body.Length
+        "Accept"         = "*/*"
     }
 
     try {
-        Invoke-WebRequest -Headers $headers $uri -Method Put -Body $body | Out-Null
+        Invoke-WebRequest -Headers $headers -Uri $uri -Method Put -Body $body -RetryIntervalSec 2 -MaximumRetryCount 300 
     }
     catch {
         Write-Host -ForegroundColor Red $request
@@ -285,40 +297,48 @@ function FinalizeAzureStorageUpload($sasUri, $ids) {
 
 ####################################################
 # Function that splits the source file into chunks and calls the upload to the Intune Service SAS URI location, and finalizes the upload
-function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB) {
+function UploadFileToAzureStorage($sasUri, $sasUriRenewTime, $filepath, $blockSizeMB) {
     # Chunk size in MiB
     $chunkSizeInBytes = 1024 * 1024 * $blockSizeMB
+    $fileUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSPkgApp/contentVersions/$contentVersionId/files/$contentVersionFileId"
 
     # Read the whole file and find the total chunks.
-    #[byte[]]$bytes = Get-Content $filepath -Encoding byte;
-    # Using ReadAllBytes method as the Get-Content used alot of memory on the machine
     $fileStream = [System.IO.File]::OpenRead($filepath)
     $chunks = [Math]::Ceiling($fileStream.Length / $chunkSizeInBytes)
 
     # Upload each chunk.
-    $ids = @()
+    $ids = New-Object System.Collections.ArrayList
     $cc = 1
     $chunk = 0
     while ($fileStream.Position -lt $fileStream.Length) {
         $id = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($chunk.ToString("0000")))
-        $ids += $id
+        $ids.Add($id) > $null
 
         $size = [Math]::Min($chunkSizeInBytes, $fileStream.Length - $fileStream.Position)
         $body = New-Object byte[] $size
         $fileStream.Read($body, 0, $size) > $null
-        $totalBytes += $size
 
-        Write-Progress -Activity "Uploading File to Azure Storage" -Status "Uploading chunk $cc of $chunks"
+        "Uploading chunk $cc of $chunks"
         $cc++
 
         UploadAzureStorageChunk $sasUri $id $body | Out-Null
         $chunk++
+
+        # Renew the SAS URI if it is about to expire.
+        if ((Get-Date).ToUniversalTime() -ge $sasUriRenewTime) {
+            Write-Host "Renewing the SAS URI for the file upload..." -ForegroundColor Yellow
+            Invoke-MgBetaRenewDeviceAppManagementMobileAppMicrosoftGraphMacOSPkgAppContentVersionFileUpload -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -MobileAppContentFileId $ContentVersionFileId
+            $file = WaitForFileProcessing $fileUri "AzureStorageUriRenewal"
+            $sasUri = $file.azureStorageUri
+            $sasUriRenewTime = $file.azureStorageUriExpirationDateTime.AddMinutes(-3)
+            Write-Host "New SAS Uri renewal time: $sasUriRenewTime" -ForegroundColor Yellow
+        }
     }
 
     $fileStream.Close()
-    Write-Progress -Completed -Activity "Uploading File to Azure Storage"
 
     # Finalize the upload.
+    Write-Host "Finalizing file upload..." -ForegroundColor Yellow
     FinalizeAzureStorageUpload $sasUri $ids | Out-Null
 }
 
@@ -442,18 +462,20 @@ function EncryptFile($sourceFile, $targetFile) {
 ####################################################
 # Function to wait for file processing to complete by polling the file upload state
 function WaitForFileProcessing($fileUri, $stage) {
-    $attempts = 60
-    $waitTimeInSeconds = 1
+    $attempts = 120
+    $waitTimeInSeconds = 2
     $successState = "$($stage)Success"
+    $renewalSuccessState = "$($stage)RenewalSuccess"
+    $renewalPendingState = "$($stage)RenewalPending"
     $pendingState = "$($stage)Pending"
 
     $file = $null
     while ($attempts -gt 0) {
         $file = Invoke-MgGraphRequest -Method GET -Uri $fileUri
-        if ($file.uploadState -eq $successState) {
+        if ($file.uploadState -eq $successState -or $file.uploadState -eq $renewalSuccessState -or $file.uploadState -eq $renewalPendingState) {
             break
         }
-        elseif ($file.uploadState -ne $pendingState) {
+        elseif ($file.uploadState -ne $pendingState -and $file.uploadState -ne $renewalPendingState) {
             throw "File upload state is not success: $($file.uploadState)"
         }
 
