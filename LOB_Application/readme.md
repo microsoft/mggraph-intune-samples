@@ -325,7 +325,34 @@ $Rules += New-ScriptDetectionRule -ScriptFile "E:\VSCodeDetection.ps1" -EnforceS
 $Rules += New-RegistryRule -ruleType detection -keyPath "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\xyz" -valueName "DisplayName" -operationType string -operator equal -comparisonValue "VSCode"
 Invoke-Win32AppUpload -displayName "VS Code" -SourceFile "C:\IntuneApps\vscode\VSCodeSetup-x64-1.93.1.intunewin" -publisher "Microsoft" -description "VS Code (script detection)" -RunAsAccount "system" -Rules $Rules -returnCodes $returnCodes -InstallCommandLine "VSCodeSetup-x64-1.93.1.exe /VERYSILENT /MERGETASKS=!runcode" -UninstallCommandLine "C:\Program Files\Microsoft VS Code\unins000.exe /VERYSILENT" -DeviceRestartBehavior "basedOnReturnCode"
 ```
-### 3. macOS_Application_PKG_Add.ps1
+
+### 3. Win32_Application_Update.ps1
+The following script sample provides the ability to update a Win32 app in Intune.
+
+### Running the script
+1. Run the script in an IDE such as VS Code:
+#### 
+```PowerShell
+.\Win32_Application_Update.ps1
+```
+2. If you are updating properties in addition to the app package, construct the parameters for the script. This script shares the same parameters as Invoke-Win32AppUpload from Win32_Application_Add.ps1, with the exception of -AppId and -UpdateAppContentOnly.
+```PowerShell
+# Updates a .exe Win32 app in Intune (both app package + app properties) using the default return codes, a script detection rule, and a script requirement rule.
+$returnCodes = Get-DefaultReturnCodes
+$Rules = @()
+$Rules += New-ScriptRequirementRule -ScriptFile "E:\VSCodeRequirement.ps1" -DisplayName "VS Code Requirement1" -EnforceSignatureCheck $false -RunAs32Bit $false -RunAsAccount "system" -OperationType "integer" -Operator "equal" -ComparisonValue "0"
+$Rules += New-ScriptDetectionRule -ScriptFile "E:\VSCodeDetection.ps1" -EnforceSignatureCheck $false -RunAs32Bit $false
+
+Invoke-Win32AppUpdate -AppId "12345678-1234-1234-1234-123456789012" -UpdateAppContentOnly $false -displayName "VS Code" -SourceFile "E:\VSCodeSetup-x64-1.96.2.intunewin" -publisher "Microsoft" -description "Version 1.96.2" -RunAsAccount "system" -Rules $Rules -returnCodes $returnCodes -InstallCommandLine "VSCodeSetup-x64-1.96.2.exe /VERYSILENT /MERGETASKS=!runcode" -UninstallCommandLine "C:\Program Files\Microsoft VS Code\unins000.exe /VERYSILENT" -DeviceRestartBehavior "basedOnReturnCode"
+```
+If you are ONLY updating the app package content, not the app metadata, specify only the -AppId and set -UpdateAppContentOnly to $true.
+```PowerShell
+ Invoke-Win32AppUpdate -AppId "12345678-1234-1234-1234-123456789012" -UpdateAppContentOnly $true -SourceFile "E:\VSCodeUserSetup-x64-1.96.2.intunewin"
+```
+
+If successful, the script will return the application information from Intune.
+
+### 4. macOS_Application_PKG_Add.ps1
 The following script sample provides the ability to upload a macOS PKG application to the Intune Service.
 
 ### Prerequisites
