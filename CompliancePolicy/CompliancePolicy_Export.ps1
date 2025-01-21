@@ -53,7 +53,7 @@ Write-Host "Exporting Compliance policies..." -ForegroundColor Green
 Write-Host
 foreach ($DCPId in $DCPs.Id) {
     try {
-        $DCP = Get-MgDeviceManagementDeviceCompliancePolicy -PolicyId $DCPId
+        $DCP = Get-MgDeviceManagementDeviceCompliancePolicy -DeviceCompliancePolicyId $DCPId
     }
     catch {
         Write-Host "An error occurred while retrieving the Compliance Policy with the id '$DCPId', please provide a valid policy id..." -f Red
