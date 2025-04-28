@@ -135,11 +135,11 @@ function Invoke-Win32AppUpdate {
 		# If displayName input don't use Name from detection.xml file
 		if ($displayName) { $DisplayName = $displayName }
 		else { $DisplayName = $DetectionXML.ApplicationInfo.Name }
-         
+
 		$FileName = $DetectionXML.ApplicationInfo.FileName
- 
+
 		$SetupFileName = $DetectionXML.ApplicationInfo.SetupFile
- 
+
 		# Check if the file is an MSI or EXE
 		$Ext = [System.IO.Path]::GetExtension($SetupFileName)
 
@@ -155,16 +155,16 @@ function Invoke-Win32AppUpdate {
 
 				if ($MsiExecutionContext -eq "System") { $MsiPackageType = "PerMachine" }
 				elseif ($MsiExecutionContext -eq "User") { $MsiPackageType = "PerUser" }
- 
+
 				$MsiProductCode = $DetectionXML.ApplicationInfo.MsiInfo.MsiProductCode
 				$MsiProductVersion = $DetectionXML.ApplicationInfo.MsiInfo.MsiProductVersion
 				$MsiPublisher = $DetectionXML.ApplicationInfo.MsiInfo.MsiPublisher
 				$MsiRequiresReboot = $DetectionXML.ApplicationInfo.MsiInfo.MsiRequiresReboot
 				$MsiUpgradeCode = $DetectionXML.ApplicationInfo.MsiInfo.MsiUpgradeCode
-            
+
 				if ($MsiRequiresReboot -eq "false") { $MsiRequiresReboot = $false }
 				elseif ($MsiRequiresReboot -eq "true") { $MsiRequiresReboot = $true }
- 
+
 				$mobileAppBody = GetWin32AppBody `
 					-MSI `
 					-displayName "$DisplayName" `
@@ -199,7 +199,7 @@ function Invoke-Win32AppUpdate {
 			if ($Rules) {
 				$mobileAppBody.Add("rules", @($Rules))
 			}
-		 
+
 			if ($returnCodes) {
 				$mobileAppBody.Add("returnCodes", @($returnCodes))
 			}
@@ -237,20 +237,21 @@ function Invoke-Win32AppUpdate {
 		# Create a new file entry in Azure for the upload
 		$ContentVersionId = $ContentVersion.Id
 		$fileBody = GetAppFileBody "$FileName" $Size $EncrySize $null
-		$fileBody = $fileBody | ConvertTo-Json 
+		$fileBody = $fileBody | ConvertTo-Json
 
 		# Create a new file entry in Azure for the upload and get the file ID
 		Write-Host "Creating a new file entry in Azure for the upload..." -ForegroundColor Yellow
 		$ContentVersionFile = New-MgDeviceAppManagementMobileAppAsWin32LobAppContentVersionFile -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -BodyParameter $fileBody
 		$ContentVersionFileId = $ContentVersionFile.id
-        
+
 		# Get the file URI for the upload
 		$fileUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.win32LobApp/contentVersions/$ContentVersionId/files/$ContentVersionFileId"
 
 		# Upload the file to Azure Storage
 		Write-Host "Uploading the file to Azure Storage..." -ForegroundColor Yellow
 		$file = WaitForFileProcessing $fileUri "AzureStorageUriRequest"
-		[UInt32]$BlockSizeMB = 4
+		# To support large file, this must be Uint64
+		[UInt64]$BlockSizeMB = 4
 		UploadFileToAzureStorage $file.azureStorageUri $IntuneWinFile $BlockSizeMB
 
 		# Commit the file to the service
@@ -266,6 +267,9 @@ function Invoke-Win32AppUpdate {
 		Write-Host "Waiting for the file to be processed..." -ForegroundColor Yellow
 		$file = WaitForFileProcessing $fileUri "CommitFile"
 
+		# This Sleep will prevent 400 error if large file is uploaded.
+		Start-Sleep -Seconds 180
+
 		# Check if we are only updating the content
 		if ($UpdateAppContentOnly) {
 			$params = @{
@@ -275,14 +279,14 @@ function Invoke-Win32AppUpdate {
 		}
 		else {
 			$params = $mobileAppBody
-			$params.committedContentVersion = "$ContentVersionId"    
+			$params.committedContentVersion = "$ContentVersionId"
 		}
 
 		$params = $params | ConvertTo-Json
 
 		# Update the application with the new content version
 		Write-Host "Updating the application with the new content version..." -ForegroundColor Yellow
-		Update-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId -BodyParameter $params 
+		Update-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId -BodyParameter $params
 
 		# Return the application ID
 		Write-Host "Application updated successfully:" -ForegroundColor Green
@@ -332,18 +336,18 @@ function New-FileSystemRule() {
 		[parameter(Mandatory = $true)]
 		[ValidateSet("detection", "requirement")]
 		[string]$ruleType,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$path,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$fileOrFolderName,
-    
+
 		[parameter(Mandatory = $true)]
 		[bool]$check32BitOn64System,
-    
+
 		[parameter(Mandatory = $false)]
 		[ValidateSet("notConfigured", "exists", "modifiedDate", "createdDate", "version", "sizeInMB", "doesNotExist", "sizeInBytes", "appVersion")]
 		[string]$operationType,
@@ -365,7 +369,7 @@ function New-FileSystemRule() {
 		$Rule.comparisonValue = $null
 	}
 
-	$Rule."@odata.type" = "#microsoft.graph.win32LobAppFileSystemRule" 
+	$Rule."@odata.type" = "#microsoft.graph.win32LobAppFileSystemRule"
 	$Rule.ruleType = $ruleType
 	$Rule.path = $path
 	$Rule.fileOrFolderName = $fileOrFolderName
@@ -540,9 +544,9 @@ function New-ScriptDetectionRule() {
 		Write-Host "Script can't continue..." -ForegroundColor Red
 		break
 	}
-        
+
 	$ScriptContent = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes("$ScriptFile"))
-        
+
 	$Rule = @{}
 	$Rule."@odata.type" = "#microsoft.graph.win32LobAppPowerShellScriptRule"
 	$Rule.ruleType = "detection"
@@ -635,7 +639,7 @@ function New-ScriptRequirementRule {
 	}
 
 	$ScriptContent = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes("$ScriptFile"))
-        
+
 	$Rule = @{}
 	$Rule."@odata.type" = "#microsoft.graph.win32LobAppPowerShellScriptRule"
 	$Rule.displayName = $DisplayName
@@ -712,9 +716,9 @@ function WaitForFileProcessing($fileUri, $stage) {
 
 ####################################################
 # Function to upload a file to Azure Storage using the SAS URI
-function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB) {
+function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB,  $fileUri) {
 	# Chunk size in MiB
-	$chunkSizeInBytes = (1024 * 1024 * $blockSizeMB)  
+	$chunkSizeInBytes = (1024 * 1024 * $blockSizeMB)
 
 	# Read the whole file and find the total chunks.
 	#[byte[]]$bytes = Get-Content $filepath -Encoding byte;
@@ -726,6 +730,11 @@ function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB) {
 	$ids = @()
 	$cc = 1
 	$chunk = 0
+
+	# Start the timer for SAS URI renewal
+	$SASRenewalTimer = [System.Diagnostics.Stopwatch]::StartNew()
+
+
 	while ($fileStream.Position -lt $fileStream.Length) {
 		$id = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($chunk.ToString("0000")))
 		$ids += $id
@@ -740,7 +749,38 @@ function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB) {
 
 		UploadAzureStorageChunk $sasUri $id $body | Out-Null
 		$chunk++
+
+	    # Ensure the SAS Uri is renewed after 450000 msec passed.
+		if ($SASRenewalTimer.ElapsedMilliseconds -ge 450000) {
+			Write-Host -Message "SAS Uri renewal is required, attempting to renew"
+			$RenewSASURIRequest = Invoke-MgGraphRequest -uri "$($fileUri)/renewUpload" -Method "POST" -Body "{}"
+			$Stage = "AzureStorageUriRenewal"
+			do {
+				$GraphRequest = Invoke-MgGraphRequest -uri $fileUri -Method "GET"
+				switch ($GraphRequest.uploadState) {
+					"$($Stage)Pending" {
+						Write-Host -Message "Intune service request for operation '$($Stage)' is in pending state, sleeping for 10 seconds"
+						Start-Sleep -Seconds 10
+					}
+					"$($Stage)Failed" {
+						Write-Host -Message "Intune service request for operation '$($Stage)' failed"
+						throw
+					}
+					"$($Stage)TimedOut" {
+						Write-Host -Message "Intune service request for operation '$($Stage)' timed out"
+						throw
+					}
+				}
+			}
+			until ($GraphRequest.uploadState -like "$($Stage)Success")
+			Write-Host -Message "Intune service request for operation '$($Stage)' was successful with uploadState: $($GraphRequest.uploadState)"
+
+			$SASRenewalTimer.Restart()
+		}
 	}
+
+	# Stop timer
+	$SASRenewalTimer.Stop()
 
 	$fileStream.Close()
 	Write-Progress -Completed -Activity "Uploading File to Azure Storage"
@@ -748,6 +788,7 @@ function UploadFileToAzureStorage($sasUri, $filepath, $blockSizeMB) {
 	# Finalize the upload.
 	FinalizeAzureStorageUpload $sasUri $ids | Out-Null
 }
+
 
 ####################################################
 # Function to upload a chunk to Azure Storage
@@ -806,30 +847,30 @@ function GetWin32AppBody() {
 	(
 		[parameter(Mandatory = $true, ParameterSetName = "MSI", Position = 1)]
 		[Switch]$MSI,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "EXE", Position = 1)]
 		[Switch]$EXE,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$displayName,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$publisher,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$description,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$filename,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateNotNullOrEmpty()]
 		[string]$SetupFileName,
-    
+
 		[parameter(Mandatory = $true)]
 		[ValidateSet('system', 'user')]
 		[string]$RunAsAccount,
@@ -837,42 +878,42 @@ function GetWin32AppBody() {
 		[parameter(Mandatory = $true)]
 		[ValidateSet('basedOnReturnCode', 'allow', 'suppress', 'force')]
 		[string]$DeviceRestartBehavior,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "EXE")]
 		[ValidateNotNullOrEmpty()]
 		$installCommandLine,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "EXE")]
 		[ValidateNotNullOrEmpty()]
 		$uninstallCommandLine,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "MSI")]
 		[ValidateNotNullOrEmpty()]
 		$MsiPackageType,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "MSI")]
 		[ValidateNotNullOrEmpty()]
 		$MsiProductCode,
-    
+
 		[parameter(Mandatory = $false, ParameterSetName = "MSI")]
 		$MsiProductName,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "MSI")]
 		[ValidateNotNullOrEmpty()]
 		$MsiProductVersion,
-    
+
 		[parameter(Mandatory = $false, ParameterSetName = "MSI")]
 		$MsiPublisher,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "MSI")]
 		[ValidateNotNullOrEmpty()]
 		$MsiRequiresReboot,
-    
+
 		[parameter(Mandatory = $true, ParameterSetName = "MSI")]
 		[ValidateNotNullOrEmpty()]
 		$MsiUpgradeCode
 	)
-    
+
 	if ($MSI) {
 		$body = @{ "@odata.type" = "#microsoft.graph.win32LobApp" }
 		$body.applicableArchitectures = "x64,x86"
@@ -883,7 +924,7 @@ function GetWin32AppBody() {
 		$body.installCommandLine = "msiexec /i `"$SetupFileName`""
 		$body.installExperience = @{
 			"runAsAccount"          = "$RunAsAccount"
-			"deviceRestartBehavior" = $DeviceRestartBehavior 
+			"deviceRestartBehavior" = $DeviceRestartBehavior
 		}
 		$body.informationUrl = $null
 		$body.isFeatured = $false
@@ -915,7 +956,7 @@ function GetWin32AppBody() {
 		$body.installCommandLine = $installCommandLine
 		$body.installExperience = @{
 			"runAsAccount"          = $RunAsAccount
-			"deviceRestartBehavior" = $DeviceRestartBehavior 
+			"deviceRestartBehavior" = $DeviceRestartBehavior
 		}
 		$body.informationUrl = $null
 		$body.isFeatured = $false
@@ -943,14 +984,14 @@ Function Test-SourceFile() {
 		$SourceFile
 	)
 	try {
-    
+
 		if (!(test-path "$SourceFile")) {
 			Write-Host
 			Write-Host "Source File '$sourceFile' doesn't exist..." -ForegroundColor Red
 			throw
 		}
 	}
-    
+
 	catch {
 		Write-Host -ForegroundColor Red $_.Exception.Message
 		Write-Host
@@ -959,14 +1000,14 @@ Function Test-SourceFile() {
 }
 
 ####################################################
-# Function to get the default return codes    
+# Function to get the default return codes
 function Get-DefaultReturnCodes() {
 	@{"returnCode" = 0; "type" = "success" }, `
 	@{"returnCode" = 1707; "type" = "success" }, `
 	@{"returnCode" = 3010; "type" = "softReboot" }, `
 	@{"returnCode" = 1641; "type" = "hardReboot" }, `
 	@{"returnCode" = 1618; "type" = "retry" }
-    
+
 }
 
 ####################################################
@@ -976,31 +1017,31 @@ Function Get-IntuneWinXML() {
 	(
 		[Parameter(Mandatory = $true)]
 		$SourceFile,
-    
+
 		[Parameter(Mandatory = $true)]
 		$fileName,
-    
+
 		[Parameter(Mandatory = $false)]
 		[bool]$removeitem = $true
 	)
-    
+
 	Test-SourceFile "$SourceFile"
-    
+
 	$Directory = [System.IO.Path]::GetDirectoryName("$SourceFile")
-    
+
 	Add-Type -Assembly System.IO.Compression.FileSystem
 	$zip = [IO.Compression.ZipFile]::OpenRead("$SourceFile")
-    
+
 	$zip.Entries | Where-Object { $_.Name -like "$filename" } | ForEach-Object {
 		[System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$Directory\$filename", $true)
 	}
-    
+
 	$zip.Dispose()
-    
+
 	[xml]$IntuneWinXML = Get-Content "$Directory\$filename"
-    
+
 	return $IntuneWinXML
-    
+
 	if ($removeitem -eq $true) { remove-item "$Directory\$filename" }
 }
 
@@ -1011,30 +1052,30 @@ Function Get-IntuneWinFile() {
 	(
 		[Parameter(Mandatory = $true)]
 		$SourceFile,
-    
+
 		[Parameter(Mandatory = $true)]
 		$fileName,
-    
+
 		[Parameter(Mandatory = $false)]
 		[string]$Folder = "win32"
 	)
-    
+
 	$Directory = [System.IO.Path]::GetDirectoryName("$SourceFile")
-    
+
 	if (!(Test-Path "$Directory\$folder")) {
 		New-Item -ItemType Directory -Path "$Directory" -Name "$folder" -Force
 	}
-    
+
 	Add-Type -Assembly System.IO.Compression.FileSystem
 	$zip = [IO.Compression.ZipFile]::OpenRead(("$SourceFile"))
 	$zip.Entries | Where-Object { $_.Name -like "$filename" } | ForEach-Object {
 		[System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$Directory\$folder\$filename", $true)
 	}
-    
+
 	$zip.Dispose()
-    
+
 	return "$Directory\$folder\$filename"
-    
+
 	if ($removeitem -eq $true) { remove-item "$Directory\$filename" }
 }
 
@@ -1047,6 +1088,6 @@ function GetAppFileBody($name, $size, $sizeEncrypted, $manifest) {
 	$body.sizeEncrypted = $sizeEncrypted
 	$body.manifest = $manifest
 	$body.isDependency = $false
-        
+
 	$body
 }
