@@ -73,6 +73,34 @@ NAME: Get-ConfigurationPolicyAssignments
 
 ####################################################
 
+Function Get-GroupDisplayName() {
+
+    <#
+.SYNOPSIS
+Helper function to retrieve group display name by ID
+.DESCRIPTION
+Retrieves the display name for a group, with error handling
+.EXAMPLE
+Get-GroupDisplayName -GroupId $groupId
+#>
+
+    param (
+        [parameter(Mandatory = $true)]
+        [string]$GroupId
+    )
+
+    try {
+        $Group = Get-MgGroup -GroupId $GroupId
+        return $Group.displayName
+    }
+    catch {
+        return "Group (Unable to retrieve name)"
+    }
+
+}
+
+####################################################
+
 $PolicyId = Read-Host -Prompt "Enter the Configuration Policy ID to get assignments"
 
 if ($PolicyId -eq "" -or $null -eq $PolicyId) {
@@ -108,31 +136,17 @@ try {
                 if ($Assignment.target.'@odata.type' -eq '#microsoft.graph.groupAssignmentTarget') {
 
                     $GroupId = $Assignment.target.groupId
-                    
-                    try {
-                        $Group = Get-MgGroup -GroupId $GroupId
-                        Write-Host "  - Include: $($Group.displayName)" -ForegroundColor Green
-                        Write-Host "    Group ID: $GroupId"
-                    }
-                    catch {
-                        Write-Host "  - Include: Group (Unable to retrieve name)" -ForegroundColor Green
-                        Write-Host "    Group ID: $GroupId"
-                    }
+                    $GroupName = Get-GroupDisplayName -GroupId $GroupId
+                    Write-Host "  - Include: $GroupName" -ForegroundColor Green
+                    Write-Host "    Group ID: $GroupId"
 
                 }
                 elseif ($Assignment.target.'@odata.type' -eq '#microsoft.graph.exclusionGroupAssignmentTarget') {
 
                     $GroupId = $Assignment.target.groupId
-                    
-                    try {
-                        $Group = Get-MgGroup -GroupId $GroupId
-                        Write-Host "  - Exclude: $($Group.displayName)" -ForegroundColor Red
-                        Write-Host "    Group ID: $GroupId"
-                    }
-                    catch {
-                        Write-Host "  - Exclude: Group (Unable to retrieve name)" -ForegroundColor Red
-                        Write-Host "    Group ID: $GroupId"
-                    }
+                    $GroupName = Get-GroupDisplayName -GroupId $GroupId
+                    Write-Host "  - Exclude: $GroupName" -ForegroundColor Red
+                    Write-Host "    Group ID: $GroupId"
 
                 }
                 elseif ($Assignment.target.'@odata.type' -eq '#microsoft.graph.allLicensedUsersAssignmentTarget') {
