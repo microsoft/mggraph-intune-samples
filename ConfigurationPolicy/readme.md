@@ -25,7 +25,17 @@ Previously, these policies were classified under Settings Catalog. However, seve
 
 ## Scripts in this Section
 
-### 1. ConfigurationPolicy_Export.ps1
+### 1. ConfigurationPolicy_Get.ps1
+This script retrieves and displays all configuration policies from the Intune Service, showing their key properties including ID, name, description, platforms, technologies, and template references.
+
+```PowerShell
+# Get all configuration policies
+.\ConfigurationPolicy_Get.ps1
+```
+
+The script will display detailed information about each policy, making it easy to identify policy IDs for other operations like removal or export.
+
+### 2. ConfigurationPolicy_Export.ps1
 This script gets all configuration policies from the Intune Service that you have authenticated with, regardless of their technology type. The script will then export each policy to .json format in the directory of your choice.
 
 ```PowerShell
@@ -100,7 +110,22 @@ This function is used to export the policy information. It has two required para
 Export-JSONData -JSON $JSON -ExportPath "$ExportPath"
 ```
 
-### 2. ConfigurationPolicy_Import_FromJSON.ps1
+### 3. ConfigurationPolicy_Remove.ps1
+This script removes a configuration policy from Intune. It requires the policy ID and will prompt for confirmation before deletion.
+
+```PowerShell
+# Remove a specific configuration policy
+.\ConfigurationPolicy_Remove.ps1
+```
+
+When prompted, enter the Configuration Policy ID (which can be obtained from the ConfigurationPolicy_Get.ps1 script). The script will:
+1. Retrieve and display the policy details
+2. Ask for confirmation
+3. Remove the policy if confirmed
+
+**Important**: This action is permanent and cannot be undone.
+
+### 4. ConfigurationPolicy_Import_FromJSON.ps1
 This script imports a configuration policy from a JSON file that was previously exported using the ConfigurationPolicy_Export.ps1 script. It supports all technology types including Windows 365, Microsoft Defender for Endpoint, Endpoint Privilege Management, and traditional MDM policies.
 
 The script will:
@@ -136,6 +161,20 @@ Add-ConfigurationPolicySettings -JSON $JSON -policyid $policyid
 
 ## Usage Examples
 
+### Getting Policy Information
+
+1. Connect to Microsoft Graph:
+   ```PowerShell
+   Connect-MgGraph -Scopes "DeviceManagementConfiguration.Read.All"
+   ```
+
+2. Run the get script:
+   ```PowerShell
+   .\ConfigurationPolicy_Get.ps1
+   ```
+
+This will display all configuration policies with their IDs and properties, which you can use for export or removal operations.
+
 ### Exporting Policies
 
 1. Connect to Microsoft Graph:
@@ -163,6 +202,22 @@ Add-ConfigurationPolicySettings -JSON $JSON -policyid $policyid
    ```
 
 3. Specify the path to the JSON file when prompted (e.g., `C:\IntuneBackup\MyPolicy_01-01-2024-10-30-00.json`)
+
+### Removing Policies
+
+1. Connect to Microsoft Graph:
+   ```PowerShell
+   Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
+   ```
+
+2. Get the policy ID using the Get script or from the Intune portal
+
+3. Run the remove script:
+   ```PowerShell
+   .\ConfigurationPolicy_Remove.ps1
+   ```
+
+4. Enter the policy ID when prompted and confirm the removal
 
 ## Difference from Settings Catalog Scripts
 
