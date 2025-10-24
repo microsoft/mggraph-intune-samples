@@ -125,7 +125,48 @@ When prompted, enter the Configuration Policy ID (which can be obtained from the
 
 **Important**: This action is permanent and cannot be undone.
 
-### 4. ConfigurationPolicy_Import_FromJSON.ps1
+### 4. ConfigurationPolicy_Assign.ps1
+This script assigns a configuration policy to an Azure AD group. You can choose to include or exclude the group from the policy.
+
+```PowerShell
+# Assign a configuration policy to a group
+.\ConfigurationPolicy_Assign.ps1
+```
+
+The script will:
+1. Prompt for the Azure AD group name or ID
+2. Prompt for the Configuration Policy ID
+3. Ask whether to include or exclude the group
+4. Create the assignment
+
+#### Add-ConfigurationPolicyAssignment Function
+This function creates an assignment for a configuration policy.
+
+```PowerShell
+Add-ConfigurationPolicyAssignment -ConfigurationPolicyId $policyId -TargetGroupId $groupId -AssignmentType "Include"
+```
+
+### 5. ConfigurationPolicy_Get_Assign.ps1
+This script retrieves and displays all assignments for a specific configuration policy, showing which groups are included or excluded.
+
+```PowerShell
+# Get assignments for a configuration policy
+.\ConfigurationPolicy_Get_Assign.ps1
+```
+
+When prompted, enter the Configuration Policy ID. The script will display:
+- All group assignments (included and excluded)
+- All Users assignments
+- All Devices assignments
+
+#### Get-ConfigurationPolicyAssignments Function
+This function retrieves all assignments for a configuration policy.
+
+```PowerShell
+Get-ConfigurationPolicyAssignments -ConfigurationPolicyId $policyId
+```
+
+### 6. ConfigurationPolicy_Import_FromJSON.ps1
 This script imports a configuration policy from a JSON file that was previously exported using the ConfigurationPolicy_Export.ps1 script. It supports all technology types including Windows 365, Microsoft Defender for Endpoint, Endpoint Privilege Management, and traditional MDM policies.
 
 The script will:
@@ -218,6 +259,38 @@ This will display all configuration policies with their IDs and properties, whic
    ```
 
 4. Enter the policy ID when prompted and confirm the removal
+
+### Assigning Policies to Groups
+
+1. Connect to Microsoft Graph:
+   ```PowerShell
+   Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All", "Group.Read.All"
+   ```
+
+2. Run the assign script:
+   ```PowerShell
+   .\ConfigurationPolicy_Assign.ps1
+   ```
+
+3. Enter the Azure AD group name or ID when prompted
+
+4. Enter the Configuration Policy ID
+
+5. Choose whether to include or exclude the group
+
+### Getting Policy Assignments
+
+1. Connect to Microsoft Graph:
+   ```PowerShell
+   Connect-MgGraph -Scopes "DeviceManagementConfiguration.Read.All", "Group.Read.All"
+   ```
+
+2. Run the get assignments script:
+   ```PowerShell
+   .\ConfigurationPolicy_Get_Assign.ps1
+   ```
+
+3. Enter the Configuration Policy ID when prompted to see all assignments
 
 ## Difference from Settings Catalog Scripts
 
