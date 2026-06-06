@@ -47,7 +47,7 @@ if (!(Test-Path "$ImportPath")) {
 $JsonPolicyBody = Get-Content -Path "$ImportPath"
 
 ## Converting JSON to HashTable
-$ConvertedPolicyBody = ($JSON_Data | ConvertFrom-Json -AsHashtable).AdditionalProperties
+$ConvertedPolicyBody = ($JsonPolicyBody | ConvertFrom-Json -AsHashtable).AdditionalProperties
 
 ## Storing the display name of the policy in a variable
 $DisplayName = ($JsonPolicyBody | ConvertFrom-Json).DisplayName
