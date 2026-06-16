@@ -438,3 +438,80 @@ An example of this is below:
 # macOS Application Upload
 Invoke-macOSLobAppUpload -SourceFile "E:\CompanyPortal-Installer.pkg" -displayName "Company Portal" -Publisher "Microsoft" -Description "Company Portal for macOS" -primaryBundleId "com.microsoft.com.microsoft.CompanyPortalMac" -primaryBundleVersion "5.2409.1" -includedApps $includedApps -minimumSupportedOperatingSystem @{v10_13 = $true } -ignoreVersionDetection $true -preInstallScriptPath "E:\preInstall.sh" -postInstallScriptPath "E:\postInstall.sh"
 ```
+
+### 5. MSIX_Application_Add.ps1
+The following script sample provides the ability to upload an MSIX/AppX line-of-business application (`windowsUniversalAppX`) to the Intune Service. It supports `.msix`, `.msixbundle`, `.appx`, and `.appxbundle` packages.
+
+### Prerequisites
++ Dependent PowerShell modules:
+    - Microsoft.Graph.Devices.CorporateManagement
+    - Microsoft.Graph.Authentication
++ An MSIX/AppX package (`.msix`, `.msixbundle`, `.appx`, or `.appxbundle`)
+
+### How an MSIX app differs from a Win32 (.intunewin) app
+Unlike a Win32 `.intunewin` file, an `.msix`/`.appx` package is **not** pre-encrypted and does **not** contain a `detection.xml`. The metadata Intune needs is parsed from the package manifest instead, and the script encrypts the package itself. Specifically, the script:
+
+1. Opens the package (an `.msix`/`.appx` is a ZIP archive) and reads `AppxManifest.xml` (or `AppxBundleManifest.xml` for `.msixbundle`/`.appxbundle`).
+2. Parses the package **Identity** to populate the `windowsUniversalAppX` properties:
+    + `identityName` — `Identity/@Name`
+    + `identityVersion` — `Identity/@Version`
+    + `identityPublisherHash` — computed from `Identity/@Publisher` (see below)
+    + `identityResourceIdentifier` — `Identity/@ResourceId` (when present)
+    + `applicableArchitectures` — mapped from `Identity/@ProcessorArchitecture` (for a bundle, the distinct architectures of the contained packages)
+    + `isBundle` — `$true` for `.msixbundle`/`.appxbundle`
+3. Computes the **Identity Publisher Hash** — the same hash that forms the last segment of a package family name (for example, the `8wekyb3d8bbwe` in a Microsoft package family name). It is the Crockford-style Base32 encoding of the first 8 bytes of the SHA-256 hash of the UTF-16LE publisher string.
+4. Encrypts a copy of the package (AES + HMAC-SHA256) and uploads the encrypted copy to Azure Storage. The content file's `manifest` is set to the base64-encoded file name, which `windowsUniversalAppX` content files require.
+
+### Running the script
+1. Run the script in an IDE such as VS Code:
+####
+```PowerShell
+.\MSIX_Application_Add.ps1
+```
+
+2. To upload an MSIX/AppX app, run the `Invoke-MSIXAppUpload` function specifying at minimum the package path (`-SourceFile`). If `-displayName`, `-publisher`, or `-description` are omitted, they are taken from the package manifest.
+```PowerShell
+# Uploads an .msix app, parsing the display name, publisher, and identity from the package.
+Invoke-MSIXAppUpload -SourceFile "C:\IntuneApps\Contoso\Contoso.DemoApp_1.0.0.0_x64.msix"
+```
+
+```PowerShell
+# Uploads an .msix app with an explicit display name, publisher, description, and app icon.
+Invoke-MSIXAppUpload -SourceFile "C:\IntuneApps\Contoso\Contoso.DemoApp_1.0.0.0_x64.msix" -displayName "Contoso Demo App" -publisher "Contoso" -description "Contoso Demo App (MSIX)" -IconFile "C:\IntuneApps\Contoso\icon.png"
+```
+
+3. If successful, the script returns the application information from Intune (`@odata.type` of `#microsoft.graph.windowsUniversalAppX`, `PublishingState` of `published`).
+
+### Script parameters
++ SourceFile - The path to the `.msix`, `.msixbundle`, `.appx`, or `.appxbundle` file (required)
++ displayName - The display name of the application. Defaults to the package DisplayName (or Identity Name)
++ publisher - The publisher of the application. Defaults to the package PublisherDisplayName (or Identity Publisher)
++ description - The description of the application. Defaults to the display name
++ minimumSupportedOperatingSystem - A windowsMinimumOperatingSystem hashtable. Valid keys are `v8_0`, `v8_1`, and `v10_0`. Defaults to `@{ v10_0 = $true }`
++ IconFile - The path to a `.png`, `.jpg`, `.jpeg`, or `.gif` image to use as the app icon (optional)
+
+> **Note on app icons:** the icon's MIME type is determined from the file extension. Make sure the file content matches its extension — for example, a WebP image saved with a `.png` extension is rejected by Intune with `Icon in invalid format`.
+
+### 6. MSIX_Application_Update.ps1
+The following script sample provides the ability to update an existing MSIX/AppX application (`windowsUniversalAppX`) in Intune by uploading a new package as a new content version.
+
+A `windowsUniversalAppX` app's package identity (`identityName`, `identityPublisherHash`, `identityVersion`, `isBundle`, `applicableArchitectures`, etc.) is **read-only after creation** — the service re-derives it from the newly committed package content. An update therefore changes only the package content plus any editable metadata (display name, publisher, description, icon). The replacement package must have the same Identity Name and Publisher as the existing app; normally only the Identity Version increases between updates.
+
+### Running the script
+1. Run the script in an IDE such as VS Code:
+####
+```PowerShell
+.\MSIX_Application_Update.ps1
+```
+
+2. To update only the package content, specify the `-AppId` and set `-UpdateAppContentOnly` to `$true`.
+```PowerShell
+Invoke-MSIXAppUpdate -AppId "12345678-1234-1234-1234-123456789012" -UpdateAppContentOnly $true -SourceFile "C:\IntuneApps\Contoso\Contoso.DemoApp_1.1.0.0_x64.msix"
+```
+
+3. To update the package content and editable app properties, set `-UpdateAppContentOnly` to `$false` and supply the properties to change. Properties that are omitted are left unchanged.
+```PowerShell
+Invoke-MSIXAppUpdate -AppId "12345678-1234-1234-1234-123456789012" -UpdateAppContentOnly $false -SourceFile "C:\IntuneApps\Contoso\Contoso.DemoApp_1.1.0.0_x64.msix" -description "Version 1.1.0.0" -IconFile "C:\IntuneApps\Contoso\icon.png"
+```
+
+4. If successful, the script returns the updated application information from Intune (with an incremented `committedContentVersion`).

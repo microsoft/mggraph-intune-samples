@@ -48,6 +48,9 @@ The account to run the app as. Valid values are 'system' or 'user'.
 .PARAMETER DeviceRestartBehavior
 The device restart behavior for the app. Valid values are 'basedOnReturnCode', 'allow', 'suppress', 'force'.
 
+.PARAMETER IconFile
+The path to an image file (.png, .jpg, .jpeg, or .gif) to use as the app icon. The image is converted to a mimeContent object and uploaded as the app's largeIcon. Optional.
+
 .EXAMPLE
 # Uploads a .exe Win32 app to Intune using the default return codes and a file system rule.
 $returnCodes = Get-DefaultReturnCodes
@@ -112,7 +115,10 @@ function Invoke-Win32AppUpload {
 
         [parameter(Mandatory = $true, Position = 11)]
         [ValidateSet('basedOnReturnCode', 'allow', 'suppress', 'force')]
-        [string]$DeviceRestartBehavior
+        [string]$DeviceRestartBehavior,
+
+        [parameter(Mandatory = $false, Position = 12)]
+        [string]$IconFile
     )
     try	{
 
@@ -195,6 +201,12 @@ function Invoke-Win32AppUpload {
             Write-Warning "Intunewin file requires ReturnCodes to be specified"
             Write-Warning "If you want to use the default ReturnCode run 'Get-DefaultReturnCodes'"
             break
+        }
+
+        # Add the app icon (largeIcon) if an icon file was provided
+        if ($IconFile) {
+            Write-Host "Adding app icon from '$IconFile'..." -ForegroundColor Yellow
+            $mobileAppBody.Add("largeIcon", (New-IntuneAppIcon -IconFile $IconFile))
         }
 
         # Create the application in Intune and get the application ID
@@ -675,6 +687,60 @@ function New-ReturnCode() {
     )
 
     @{"returnCode" = $returnCode; "type" = "$type" }
+}
+
+<#
+.SYNOPSIS
+Converts an image file to a mimeContent object for use as a Win32 app icon.
+
+.DESCRIPTION
+This function reads an image file from disk, base64-encodes its content, and returns a mimeContent hashtable that can be assigned to a mobileApp's largeIcon property. Supported image types are .png, .jpg, .jpeg, and .gif.
+
+.PARAMETER IconFile
+The path to the image file to use as the app icon.
+
+.EXAMPLE
+# Creates a mimeContent icon object from a .png file.
+New-IntuneAppIcon -IconFile "C:\IntuneApps\vscode\icon.png"
+#>
+function New-IntuneAppIcon() {
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$IconFile
+    )
+
+    # Check the icon file exists
+    if (!(Test-Path "$IconFile")) {
+        Write-Host "Icon file '$IconFile' doesn't exist..." -ForegroundColor Red
+        throw "Icon file not found: $IconFile"
+    }
+
+    # Determine the MIME type from the file extension
+    $Extension = [System.IO.Path]::GetExtension("$IconFile").ToLower()
+    switch ($Extension) {
+        ".png" { $MimeType = "image/png" }
+        ".jpg" { $MimeType = "image/jpeg" }
+        ".jpeg" { $MimeType = "image/jpeg" }
+        ".gif" { $MimeType = "image/gif" }
+        default {
+            Write-Host "Unsupported icon file type '$Extension'. Supported types are .png, .jpg, .jpeg, and .gif." -ForegroundColor Red
+            throw "Unsupported icon file type: $Extension"
+        }
+    }
+
+    # Read the image file and base64-encode its content
+    $IconContent = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes("$IconFile"))
+
+    # Construct and return the mimeContent object (used as the app's largeIcon)
+    $Icon = @{
+        "@odata.type" = "#microsoft.graph.mimeContent"
+        "type"        = $MimeType
+        "value"       = $IconContent
+    }
+
+    return $Icon
 }
 
 ####################################################
