@@ -14,7 +14,7 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 #>
 Function Get-SettingsCatalogPolicy() {
 
-    <#
+<#
 .SYNOPSIS
 This function is used to get Settings Catalog policies from the Graph API REST interface
 .DESCRIPTION
@@ -35,13 +35,20 @@ NAME: Get-SettingsCatalogPolicy
     param
     (
         [parameter(Mandatory = $false)]
-        [ValidateSet("windows10", "macOS")]
+        [ValidateSet("windows10", "windows10X", "macOS", "iOS", "android", "androidEnterprise", "aosp", "linux", "visionOS", "tvOS")]
         [ValidateNotNullOrEmpty()]
         [string]$Platform
     )
 
     $graphApiVersion = "beta"
 
+    # The 'technologies' value scopes which settings catalog policies are returned. This sample
+    # uses 'mdm', which covers the most common settings catalog policies. Other technologies are
+    # also backed by the configurationPolicies endpoint - for example: endpointPrivilegeManagement
+    # (EPM), enrollment (Autopilot device preparation), windowsOsRecovery, exchangeOnline, and
+    # microsoftSense. If you need to export those, change or remove the "technologies has 'mdm'"
+    # filter below (e.g. "technologies has 'endpointPrivilegeManagement'" or drop the filter
+    # entirely to return every configuration policy regardless of technology).
     if ($Platform) {
         
         $Resource = "deviceManagement/configurationPolicies?`$filter=platforms has '$Platform' and technologies has 'mdm'"
@@ -57,7 +64,22 @@ NAME: Get-SettingsCatalogPolicy
     try {
 
         $uri = "https://graph.microsoft.com/$graphApiVersion/$($Resource)"
-        (Invoke-MgGraphRequest -Uri $uri  -Method Get).Value
+
+        $Response = Invoke-MgGraphRequest -Uri $uri -Method Get
+
+        $AllResponses = $Response.value
+        $ResponseNextLink = $Response."@odata.nextLink"
+
+        # Following @odata.nextLink so all pages are returned, not just the first page
+        while ($null -ne $ResponseNextLink) {
+
+            $Response = Invoke-MgGraphRequest -Uri $ResponseNextLink -Method Get
+            $ResponseNextLink = $Response."@odata.nextLink"
+            $AllResponses += $Response.value
+
+        }
+
+        return $AllResponses
 
     }
 
@@ -165,7 +187,6 @@ NAME: Export-JSONData
 
         $JSON,
         $ExportPath
-
     )
 
     try {
@@ -194,7 +215,9 @@ NAME: Export-JSONData
 
             $JSON_Convert = $JSON1 | ConvertFrom-Json
 
-            $displayName = $JSON_Convert.name
+            # Settings Catalog policies use 'name'; the additional policy types
+            # (resource access profiles, hardware configurations) use 'displayName'
+            $DisplayName = if ($JSON_Convert.name) { $JSON_Convert.name } else { $JSON_Convert.displayName }
 
             # Updating display name to follow file naming conventions - https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
             $DisplayName = $DisplayName -replace '\<|\>|:|"|/|\\|\||\?|\*', "_"
@@ -213,6 +236,110 @@ NAME: Export-JSONData
     catch {
 
         $_.Exception
+
+    }
+
+}
+
+####################################################
+
+Function Get-IntuneResourceCollection() {
+
+    <#
+.SYNOPSIS
+Gets all items from a Graph collection endpoint, following @odata.nextLink paging
+.DESCRIPTION
+Used to retrieve the additional policy types that branched out of the Settings Catalog
+(resource access profiles, hardware configurations) which live on their own endpoints
+.EXAMPLE
+Get-IntuneResourceCollection -Resource "deviceManagement/resourceAccessProfiles"
+.NOTES
+NAME: Get-IntuneResourceCollection
+#>
+
+    [cmdletbinding()]
+
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Resource
+    )
+
+    $graphApiVersion = "beta"
+
+    try {
+
+        $uri = "https://graph.microsoft.com/$graphApiVersion/$Resource"
+        $Response = Invoke-MgGraphRequest -Uri $uri -Method Get
+
+        $AllResponses = $Response.value
+        $ResponseNextLink = $Response."@odata.nextLink"
+
+        while ($null -ne $ResponseNextLink) {
+
+            $Response = Invoke-MgGraphRequest -Uri $ResponseNextLink -Method Get
+            $ResponseNextLink = $Response."@odata.nextLink"
+            $AllResponses += $Response.value
+
+        }
+
+        return $AllResponses
+
+    }
+
+    catch {
+
+        $ex = $_.Exception
+        Write-Host "Request to $uri failed with HTTP Status $($ex.Response.StatusCode): $($ex.Message)" -ForegroundColor Red
+        return $null
+
+    }
+
+}
+
+####################################################
+
+Function Get-IntuneResourceObject() {
+
+    <#
+.SYNOPSIS
+Gets a single object by id from a Graph collection endpoint
+.DESCRIPTION
+Re-fetches an individual policy object so all properties are returned for export
+.EXAMPLE
+Get-IntuneResourceObject -Resource "deviceManagement/hardwareConfigurations" -Id $id
+.NOTES
+NAME: Get-IntuneResourceObject
+#>
+
+    [cmdletbinding()]
+
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Resource,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Id
+    )
+
+    $graphApiVersion = "beta"
+
+    try {
+
+        $uri = "https://graph.microsoft.com/$graphApiVersion/$Resource/$Id"
+        return Invoke-MgGraphRequest -Uri $uri -Method Get
+
+    }
+
+    catch {
+
+        $ex = $_.Exception
+        Write-Host "Request to $uri failed with HTTP Status $($ex.Response.StatusCode): $($ex.Message)" -ForegroundColor Red
+        return $null
 
     }
 
@@ -314,5 +441,51 @@ else {
 
     Write-Host "No Settings Catalog policies found..." -ForegroundColor Red
     Write-Host
+
+}
+
+####################################################
+# Additional policy types that previously appeared under the Settings Catalog but
+# now have their own endpoints. They use a different schema (full object with an
+# '@odata.type' or a configuration file payload) rather than the configuration
+# settings collection, so they are exported as complete objects. The matching
+# import script (SettingsCatalog_Import_FromJSON.ps1) strips read-only properties
+# and posts each object back to the correct endpoint.
+
+$AdditionalResources = @(
+    "deviceManagement/resourceAccessProfiles",
+    "deviceManagement/hardwareConfigurations"
+)
+
+foreach ($Resource in $AdditionalResources) {
+
+    Write-Host
+    Write-Host "Checking $Resource ..." -ForegroundColor Cyan
+
+    $Items = Get-IntuneResourceCollection -Resource $Resource
+
+    if (-not $Items) {
+
+        Write-Host "No items found at $Resource" -ForegroundColor DarkGray
+        continue
+
+    }
+
+    foreach ($Item in $Items) {
+
+        $DisplayName = if ($Item.name) { $Item.name } else { $Item.displayName }
+        Write-Host $DisplayName -ForegroundColor Yellow
+
+        # Re-fetch the individual object so all properties are returned for export
+        $FullItem = Get-IntuneResourceObject -Resource $Resource -Id $Item.id
+
+        if ($FullItem) {
+
+            Export-JSONData -JSON $FullItem -ExportPath "$ExportPath"
+            Write-Host
+
+        }
+
+    }
 
 }
