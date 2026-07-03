@@ -3,9 +3,7 @@
 # This file defines who is requested for review when someone opens a pull
 # request that changes matching files. See:
 # https://docs.github.com/repositories/managing-your-repos-settings-and-features/customizing-your-repository/about-code-owners
-#
-# Replace the placeholder below with the actual maintainer team or usernames
-# (for example: @microsoft/intune-samples-maintainers or @octocat) and remove
-# this comment. Until real owners are set, no automatic review is requested.
 
-# * @microsoft/REPLACE-WITH-MAINTAINERS-TEAM
+# Global owners — requested for review on every pull request.
+# Neil Johnson, Mark Hopper, Chris Kunze.
+* @theneiljohnson @Mahopper @CKunze-MSFT
