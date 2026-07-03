@@ -1,0 +1,9 @@
+# CODEOWNERS
+#
+# This file defines who is requested for review when someone opens a pull
+# request that changes matching files. See:
+# https://docs.github.com/repositories/managing-your-repos-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners — requested for review on every pull request.
+# Neil Johnson, Mark Hopper, Chris Kunze.
+* @theneiljohnson @Mahopper @CKunze-MSFT
