@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# .gitignore for mggraph-intune-samples (PowerShell / Microsoft Graph samples)
+# ---------------------------------------------------------------------------
+
+# Operating system artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.code-workspace
+*.swp
+*~
+
+# Build / packaging output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Oo]utput/
+publish/
+*.nupkg
+*.snupkg
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Test / coverage results
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+coverage/
+
+# PowerShell secrets / credential material — never commit these
+*.pfx
+*.cer
+*.key
+*.pem
+secrets.ps1
+*.secrets.ps1
+*.Credential.xml
+
+# Exported tenant/config data produced by the *_Export.ps1 sample scripts.
+# These can contain organization-specific data — keep them out of source control.
+# (Add specific export output paths here as needed; broad *.json is intentionally
+#  NOT ignored because some samples ship legitimate .json assets.)
+Export/
+Exports/
+_exported/
