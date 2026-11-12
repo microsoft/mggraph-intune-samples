@@ -17,7 +17,7 @@ https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powers
 #>
 
 # Using get-mgdevicemanagementdevicecompliancepolicy
-$DCPs = Get-MgDeviceManagementDeviceCompliancePolicy -Property Id, DisplayName, Description
+$DCPs = Get-MgDeviceManagementDeviceCompliancePolicy -Property Id, DisplayName, Description -All
 
 
 if ($DCPs.Length -eq 0) {
