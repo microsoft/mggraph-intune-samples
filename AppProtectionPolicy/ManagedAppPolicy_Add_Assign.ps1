@@ -31,7 +31,8 @@ if ($SelectedGroup.Count -gt 1) {
 	Write-Host
 	$SelectedGroup | Format-Table -Property DisplayName, Id
 	Write-Host
-	$SelectedGroup = Read-Host -Prompt "Enter the Group ID from the list above"
+	$SelectedGroupId = Read-Host -Prompt "Enter the Group ID from the list above"
+	$TargetGroupId = ($SelectedGroup | Where-Object { $_.Id -eq $SelectedGroupId }).Id
 }
 elseif ($SelectedGroup.Count -eq 1) {
 	$TargetGroupId = $SelectedGroup.Id
