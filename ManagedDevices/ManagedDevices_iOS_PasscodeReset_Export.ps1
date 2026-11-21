@@ -64,12 +64,17 @@ $ReportReady = $Response.status
 $URI = "https://graph.microsoft.com/beta/deviceManagement/reports/exportJobs('$ReportId')"
 
 #Polling report download URI until it's ready for download
-While ($ReportReady -ne 'completed') {
+While ($ReportReady -ne 'completed' -and $ReportReady -ne 'failed') {
     Write-Output "Report not ready yet..."
     $Response = (Invoke-MgGraphRequest -Method GET -Uri $URI)
     $ReportReady = $Response.status
     $ReportDownloadURL = $Response.url
     Start-Sleep -Seconds 3
+}
+
+if ($ReportReady -eq 'failed') {
+    Write-Error "Report $ReportId failed to export. Please try again."
+    return
 }
 
 Write-Output "Report ready. Downloading..."
